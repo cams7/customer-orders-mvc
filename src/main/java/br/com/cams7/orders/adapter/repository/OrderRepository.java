@@ -10,14 +10,14 @@ import br.com.cams7.orders.core.port.out.DeleteOrderByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.GetOrderByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.GetOrdersByCountryRepositoryPort;
 import br.com.cams7.orders.core.utils.DateUtils;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.mongodb.core.ReactiveMongoOperations;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Repository
 @RequiredArgsConstructor
@@ -28,39 +28,38 @@ public class OrderRepository
         CreateOrderRepositoryPort {
 
   private final DateUtils dateUtils;
-  private final ReactiveMongoOperations mongoOperations;
+  private final MongoTemplate mongoTemplate;
   private final ModelMapper modelMapper;
 
   @Override
-  public Flux<OrderEntity> getOrders(String country) {
+  public List<OrderEntity> getOrders(String country) {
     var query = new Query(Criteria.where("address.country").is(country));
-    return mongoOperations
-        .find(query, OrderModel.class, getCollectionName(country))
-        .map(this::getOrder);
+    return mongoTemplate.find(query, OrderModel.class, getCollectionName(country)).stream()
+        .map(this::getOrder)
+        .collect(Collectors.toList());
   }
 
   @Override
-  public Mono<OrderEntity> getOrder(String country, String orderId) {
-    return mongoOperations
-        .findById(orderId, OrderModel.class, getCollectionName(country))
-        .map(this::getOrder);
+  public OrderEntity getOrder(String country, String orderId) {
+    return getOrder(mongoTemplate.findById(orderId, OrderModel.class, getCollectionName(country)));
   }
 
   @Override
-  public Mono<Long> delete(String country, String orderId) {
+  public Long delete(String country, String orderId) {
     var query = new Query(Criteria.where("id").is(orderId));
-    return mongoOperations
+    return mongoTemplate
         .remove(query, OrderModel.class, getCollectionName(country))
-        .map(data -> data.getDeletedCount());
+        .getDeletedCount();
   }
 
   @Override
-  public Mono<OrderEntity> create(OrderEntity order) {
+  public OrderEntity create(OrderEntity order) {
     var country = order.getAddress().getCountry();
-    return mongoOperations.insert(getOrder(order), getCollectionName(country)).map(this::getOrder);
+    return getOrder(mongoTemplate.insert(getOrder(order), getCollectionName(country)));
   }
 
   private OrderEntity getOrder(OrderModel model) {
+    if (model == null) return null;
     var country = model.getAddress().getCountry();
     var entity =
         modelMapper
@@ -72,6 +71,7 @@ public class OrderRepository
   }
 
   private OrderModel getOrder(OrderEntity entity) {
+    if (entity == null) return null;
     var model = modelMapper.map(entity, OrderModel.class);
     model.setId(entity.getOrderId());
     model.setTotal(entity.getTotalAmount());

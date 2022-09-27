@@ -1,9 +1,9 @@
 package br.com.cams7.orders.core.port.out;
 
 import br.com.cams7.orders.core.domain.Payment;
-import reactor.core.publisher.Mono;
+import java.util.concurrent.Future;
 
 @FunctionalInterface
 public interface VerifyPaymentServicePort {
-  Mono<Payment> verify(String customerId, Float amount);
+  Future<Payment> verify(String customerId, Float amount);
 }

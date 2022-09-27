@@ -4,48 +4,44 @@ import static br.com.cams7.orders.arch.ArchUnitHelper.ALL_CLASSES_PACKAGE;
 import static br.com.cams7.orders.arch.ArchUnitHelper.CONTROLLER_REQUEST_PACKAGE;
 import static br.com.cams7.orders.arch.ArchUnitHelper.CONTROLLER_RESPONSE_PACKAGE;
 import static br.com.cams7.orders.arch.ArchUnitHelper.WEBCLIENT_LAYER;
-import static br.com.cams7.orders.arch.ArchUnitHelper.WEBCLIENT_PACKAGE;
 import static br.com.cams7.orders.arch.ArchUnitHelper.WEBCLIENT_REQUEST_PACKAGE;
 import static br.com.cams7.orders.arch.ArchUnitHelper.WEBCLIENT_REQUEST_SUFFIX;
 import static br.com.cams7.orders.arch.ArchUnitHelper.WEBCLIENT_RESPONSE_PACKAGE;
 import static br.com.cams7.orders.arch.ArchUnitHelper.WEBCLIENT_RESPONSE_SUFFIX;
-import static br.com.cams7.orders.arch.ArchUnitHelper.WEBCLIENT_SUFFIX;
 import static br.com.cams7.orders.arch.ArchUnitHelper.getLayeredArchitecture;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 
-import br.com.cams7.orders.adapter.webclient.BaseWebclient;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.importer.ImportOption.DoNotIncludeTests;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
-import org.springframework.stereotype.Service;
 
 @AnalyzeClasses(packages = ALL_CLASSES_PACKAGE, importOptions = DoNotIncludeTests.class)
 class WebclientLayerArchRulesTests {
 
-  @ArchTest
-  void shouldBeSuffixedAsServiceWhenInWebClientPackage(JavaClasses allClasses) {
-    classes()
-        .that()
-        .resideInAPackage(WEBCLIENT_PACKAGE)
-        .should()
-        .haveSimpleNameEndingWith(WEBCLIENT_SUFFIX)
-        .orShould()
-        .be(BaseWebclient.class)
-        .check(allClasses);
-  }
-
-  @ArchTest
-  void shouldBeAnnotatedAsServiceWhenInWebClientPackage(JavaClasses allClasses) {
-    classes()
-        .that()
-        .resideInAPackage(WEBCLIENT_PACKAGE)
-        .should()
-        .beAnnotatedWith(Service.class)
-        .orShould()
-        .be(BaseWebclient.class)
-        .check(allClasses);
-  }
+  //  @ArchTest
+  //  void shouldBeSuffixedAsServiceWhenInWebClientPackage(JavaClasses allClasses) {
+  //    classes()
+  //        .that()
+  //        .resideInAPackage(WEBCLIENT_PACKAGE)
+  //        .should()
+  //        .haveSimpleNameEndingWith(WEBCLIENT_SUFFIX)
+  //        .orShould()
+  //        .be(BaseWebclient.class)
+  //        .check(allClasses);
+  //  }
+  //
+  //  @ArchTest
+  //  void shouldBeAnnotatedAsServiceWhenInWebClientPackage(JavaClasses allClasses) {
+  //    classes()
+  //        .that()
+  //        .resideInAPackage(WEBCLIENT_PACKAGE)
+  //        .should()
+  //        .beAnnotatedWith(Service.class)
+  //        .orShould()
+  //        .be(BaseWebclient.class)
+  //        .check(allClasses);
+  //  }
 
   @ArchTest
   void shouldOnlyHaveSuffixAsRequestWhenInRequestPackage(JavaClasses allClasses) {

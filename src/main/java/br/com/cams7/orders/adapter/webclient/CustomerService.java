@@ -1,8 +1,5 @@
 package br.com.cams7.orders.adapter.webclient;
 
-import static br.com.cams7.orders.adapter.commons.ApiConstants.COUNTRY_HEADER;
-import static br.com.cams7.orders.adapter.commons.ApiConstants.REQUEST_TRACE_ID_HEADER;
-
 import br.com.cams7.orders.adapter.webclient.response.CustomerAddressResponse;
 import br.com.cams7.orders.adapter.webclient.response.CustomerCardResponse;
 import br.com.cams7.orders.adapter.webclient.response.CustomerResponse;
@@ -12,66 +9,61 @@ import br.com.cams7.orders.core.domain.CustomerCard;
 import br.com.cams7.orders.core.port.out.GetCustomerAddressServicePort;
 import br.com.cams7.orders.core.port.out.GetCustomerCardServicePort;
 import br.com.cams7.orders.core.port.out.GetCustomerServicePort;
+import java.util.concurrent.Future;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.web.client.RestTemplate;
 
 @Service
 @RequiredArgsConstructor
 public class CustomerService extends BaseWebclient
     implements GetCustomerServicePort, GetCustomerAddressServicePort, GetCustomerCardServicePort {
 
-  private final WebClient.Builder builder;
+  private final RestTemplate restTemplate;
   private final ModelMapper modelMapper;
 
   @Override
-  public Mono<Customer> getCustomer(String customerUrl) {
-    return getWebClient(builder, customerUrl)
-        .get()
-        .header(COUNTRY_HEADER, getCountry())
-        .header(REQUEST_TRACE_ID_HEADER, getRequestTraceId())
-        .retrieve()
-        .bodyToMono(CustomerResponse.class)
-        .map(this::getCustomer);
+  public Future<Customer> getCustomer(String customerUrl) {
+    var customer =
+        getCustomer(
+            restTemplate.exchange(getRequest(customerUrl), CustomerResponse.class).getBody());
+    return new AsyncResult<>(customer);
   }
 
   @Override
-  public Mono<CustomerAddress> getCustomerAddress(String addressUrl) {
-    return getWebClient(builder, addressUrl)
-        .get()
-        .header(COUNTRY_HEADER, getCountry())
-        .header(REQUEST_TRACE_ID_HEADER, getRequestTraceId())
-        .retrieve()
-        .bodyToMono(CustomerAddressResponse.class)
-        .map(this::getCustomerAddress);
+  public Future<CustomerAddress> getCustomerAddress(String addressUrl) {
+    var customerAddress =
+        getCustomerAddress(
+            restTemplate.exchange(getRequest(addressUrl), CustomerAddressResponse.class).getBody());
+    return new AsyncResult<>(customerAddress);
   }
 
   @Override
-  public Mono<CustomerCard> getCustomerCard(String cardUrl) {
-    return getWebClient(builder, cardUrl)
-        .get()
-        .header(COUNTRY_HEADER, getCountry())
-        .header(REQUEST_TRACE_ID_HEADER, getRequestTraceId())
-        .retrieve()
-        .bodyToMono(CustomerCardResponse.class)
-        .map(this::getCustomerCard);
+  public Future<CustomerCard> getCustomerCard(String cardUrl) {
+    var customerCard =
+        getCustomerCard(
+            restTemplate.exchange(getRequest(cardUrl), CustomerCardResponse.class).getBody());
+    return new AsyncResult<>(customerCard);
   }
 
   private Customer getCustomer(CustomerResponse response) {
+    if (response == null) return null;
     var customer = modelMapper.map(response, Customer.class);
     customer.setCustomerId(response.getId());
     return customer;
   }
 
   private CustomerAddress getCustomerAddress(CustomerAddressResponse response) {
+    if (response == null) return null;
     var customerAddress = modelMapper.map(response, CustomerAddress.class);
     customerAddress.setAddressId(response.getId());
     return customerAddress;
   }
 
   private CustomerCard getCustomerCard(CustomerCardResponse response) {
+    if (response == null) return null;
     var customerCard = modelMapper.map(response, CustomerCard.class);
     customerCard.setCardId(response.getId());
     return customerCard;

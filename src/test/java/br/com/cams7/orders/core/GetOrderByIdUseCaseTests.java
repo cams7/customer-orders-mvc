@@ -4,12 +4,13 @@ import static br.com.cams7.orders.template.DomainTemplateLoader.AUTHORISED_ORDER
 import static br.com.cams7.orders.template.domain.CustomerAddressTemplate.CUSTOMER_ADDRESS_COUNTRY;
 import static br.com.cams7.orders.template.domain.OrderEntityTemplate.ORDER_ID;
 import static br.com.six2six.fixturefactory.Fixture.from;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.times;
-import static reactor.test.StepVerifier.create;
 
 import br.com.cams7.orders.BaseTests;
 import br.com.cams7.orders.core.domain.OrderEntity;
@@ -20,7 +21,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Mono;
 
 @ExtendWith(MockitoExtension.class)
 public class GetOrderByIdUseCaseTests extends BaseTests {
@@ -34,12 +34,11 @@ public class GetOrderByIdUseCaseTests extends BaseTests {
   void shouldGetOrderWhenPassValidOrderId() {
     OrderEntity order = from(OrderEntity.class).gimme(AUTHORISED_ORDER_ENTITY);
 
-    given(getOrderByIdRepository.getOrder(anyString(), anyString())).willReturn(Mono.just(order));
+    given(getOrderByIdRepository.getOrder(anyString(), anyString())).willReturn(order);
 
-    create(getOrderByIdUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, ORDER_ID))
-        .expectSubscription()
-        .expectNext(order)
-        .verifyComplete();
+    var data = getOrderByIdUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, ORDER_ID);
+
+    assertThat(data).isEqualTo(order);
 
     then(getOrderByIdRepository)
         .should(times(1))
@@ -51,21 +50,18 @@ public class GetOrderByIdUseCaseTests extends BaseTests {
   void shouldThrowErrorWhenGetOrderByIdInDatabaseThrowsError() {
 
     given(getOrderByIdRepository.getOrder(anyString(), anyString()))
-        .willReturn(Mono.error(new RuntimeException(ERROR_MESSAGE)));
+        .willThrow(new RuntimeException(ERROR_MESSAGE));
 
-    create(getOrderByIdUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, ORDER_ID))
-        .expectSubscription()
-        .expectErrorMatches(exception -> isRuntimeException(exception))
-        .verify();
+    var exception =
+        assertThrows(
+            RuntimeException.class,
+            () -> {
+              getOrderByIdUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, ORDER_ID);
+            });
+    assertThat(exception.getMessage()).isEqualTo(ERROR_MESSAGE);
 
     then(getOrderByIdRepository)
         .should(times(1))
         .getOrder(eq(CUSTOMER_ADDRESS_COUNTRY), eq(ORDER_ID));
-  }
-
-  private static boolean isRuntimeException(Throwable throwable) {
-    if (!RuntimeException.class.equals(throwable.getClass())) return false;
-    var exception = (RuntimeException) throwable;
-    return exception.getMessage().equals(ERROR_MESSAGE);
   }
 }

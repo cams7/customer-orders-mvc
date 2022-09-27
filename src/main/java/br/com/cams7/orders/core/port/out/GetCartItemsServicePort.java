@@ -1,9 +1,10 @@
 package br.com.cams7.orders.core.port.out;
 
 import br.com.cams7.orders.core.domain.CartItem;
-import reactor.core.publisher.Flux;
+import java.util.List;
+import java.util.concurrent.Future;
 
 @FunctionalInterface
 public interface GetCartItemsServicePort {
-  Flux<CartItem> getCartItems(String itemsUrl);
+  Future<List<CartItem>> getCartItems(String itemsUrl);
 }

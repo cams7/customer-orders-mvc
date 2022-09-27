@@ -38,6 +38,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -49,8 +51,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 @Tag(name = "Customer orders")
 @RequiredArgsConstructor
@@ -93,10 +93,12 @@ public class OrderController {
   })
   @ResponseStatus(OK)
   @GetMapping
-  Flux<OrderResponse> getOrders(
+  List<OrderResponse> getOrders(
       @RequestHeader(COUNTRY_HEADER) String country,
       @RequestHeader(REQUEST_TRACE_ID_HEADER) String requestTraceId) {
-    return getOrdersByCountryUseCase.execute(country).map(this::getOrder);
+    return getOrdersByCountryUseCase.execute(country).stream()
+        .map(this::getOrder)
+        .collect(Collectors.toList());
   }
 
   @Operation(description = "Get order")
@@ -127,7 +129,7 @@ public class OrderController {
   })
   @ResponseStatus(OK)
   @GetMapping("/{orderId}")
-  Mono<OrderResponse> getOrder(
+  OrderResponse getOrder(
       @RequestHeader(COUNTRY_HEADER) String country,
       @RequestHeader(REQUEST_TRACE_ID_HEADER) String requestTraceId,
       @Parameter(
@@ -137,7 +139,7 @@ public class OrderController {
               example = "57a98d98e4b00679b4a830af")
           @PathVariable
           String orderId) {
-    return getOrderByIdUseCase.execute(country, orderId).map(this::getOrder);
+    return getOrder(getOrderByIdUseCase.execute(country, orderId));
   }
 
   @Operation(description = "Delete order")
@@ -168,7 +170,7 @@ public class OrderController {
   })
   @ResponseStatus(OK)
   @DeleteMapping("/{orderId}")
-  Mono<Void> deleteOrder(
+  void deleteOrder(
       @RequestHeader(COUNTRY_HEADER) String country,
       @RequestHeader(REQUEST_TRACE_ID_HEADER) String requestTraceId,
       @Parameter(
@@ -178,7 +180,7 @@ public class OrderController {
               example = "57a98d98e4b00679b4a830af")
           @PathVariable
           String orderId) {
-    return deleteOrderByIdUseCase.execute(country, orderId);
+    deleteOrderByIdUseCase.execute(country, orderId);
   }
 
   @Operation(description = "Create order")
@@ -213,14 +215,15 @@ public class OrderController {
   })
   @PostMapping(consumes = APPLICATION_JSON_VALUE)
   @ResponseStatus(CREATED)
-  Mono<OrderResponse> createOrder(
+  OrderResponse createOrder(
       @RequestHeader(COUNTRY_HEADER) String country,
       @RequestHeader(REQUEST_TRACE_ID_HEADER) String requestTraceId,
       @RequestBody CreateOrderRequest request) {
-    return createOrderUseCase.execute(country, getCreateOrder(request)).map(this::getOrder);
+    return getOrder(createOrderUseCase.execute(country, getCreateOrder(request)));
   }
 
   private OrderResponse getOrder(OrderEntity entity) {
+    if (entity == null) return null;
     var response = modelMapper.map(entity, OrderResponse.class);
     response.setRegistrationDate(getFormattedDateTime(entity.getRegistrationDate()));
     return response;

@@ -18,6 +18,7 @@ import static br.com.cams7.orders.template.domain.OrderEntityTemplate.DECLINED_T
 import static br.com.cams7.orders.template.domain.OrderEntityTemplate.ORDER_ID;
 import static br.com.six2six.fixturefactory.Fixture.from;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -26,7 +27,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
-import static reactor.test.StepVerifier.create;
 
 import br.com.cams7.orders.BaseTests;
 import br.com.cams7.orders.adapter.controller.request.CreateOrderRequest;
@@ -54,8 +54,7 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import org.springframework.scheduling.annotation.AsyncResult;
 
 @ExtendWith(MockitoExtension.class)
 public class CreateOrderUseCaseTests extends BaseTests {
@@ -84,19 +83,21 @@ public class CreateOrderUseCaseTests extends BaseTests {
         List.of(from(CartItem.class).gimme(CART_ITEM1), from(CartItem.class).gimme(CART_ITEM3));
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
-    given(getCustomerService.getCustomer(anyString())).willReturn(Mono.just(customer));
+    given(getCustomerService.getCustomer(anyString())).willReturn(new AsyncResult<>(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString()))
-        .willReturn(Mono.just(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString())).willReturn(Mono.just(customerCard));
-    given(getCartItemsService.getCartItems(anyString())).willReturn(Flux.fromIterable(cartItems));
-    given(verifyPaymentService.verify(anyString(), anyFloat())).willReturn(Mono.just(payment));
-    given(addShippingOrderService.add(anyString())).willReturn(Mono.just(order.getOrderId()));
-    given(createOrderRepository.create(any(OrderEntity.class))).willReturn(Mono.just(order));
+        .willReturn(new AsyncResult<>(customerAddress));
+    given(getCustomerCardService.getCustomerCard(anyString()))
+        .willReturn(new AsyncResult<>(customerCard));
+    given(getCartItemsService.getCartItems(anyString())).willReturn(new AsyncResult<>(cartItems));
+    given(verifyPaymentService.verify(anyString(), anyFloat()))
+        .willReturn(new AsyncResult<>(payment));
+    given(addShippingOrderService.add(anyString()))
+        .willReturn(new AsyncResult<>(order.getOrderId()));
+    given(createOrderRepository.create(any(OrderEntity.class))).willReturn(order);
 
-    create(createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder))
-        .expectSubscription()
-        .expectNext(order)
-        .verifyComplete();
+    var data = createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder);
+
+    assertThat(data).isEqualTo(order);
 
     then(getCustomerService).should(times(1)).getCustomer(eq(createOrder.getCustomerUrl()));
     then(getCustomerAddressService)
@@ -135,19 +136,23 @@ public class CreateOrderUseCaseTests extends BaseTests {
             from(CartItem.class).gimme(CART_ITEM3));
     Payment payment = from(Payment.class).gimme(DECLINED_PAYMENT);
 
-    given(getCustomerService.getCustomer(anyString())).willReturn(Mono.just(customer));
+    given(getCustomerService.getCustomer(anyString())).willReturn(new AsyncResult<>(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString()))
-        .willReturn(Mono.just(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString())).willReturn(Mono.just(customerCard));
-    given(getCartItemsService.getCartItems(anyString())).willReturn(Flux.fromIterable(cartItems));
-    given(verifyPaymentService.verify(anyString(), anyFloat())).willReturn(Mono.just(payment));
+        .willReturn(new AsyncResult<>(customerAddress));
+    given(getCustomerCardService.getCustomerCard(anyString()))
+        .willReturn(new AsyncResult<>(customerCard));
+    given(getCartItemsService.getCartItems(anyString())).willReturn(new AsyncResult<>(cartItems));
+    given(verifyPaymentService.verify(anyString(), anyFloat()))
+        .willReturn(new AsyncResult<>(payment));
 
-    create(createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder))
-        .expectSubscription()
-        .expectErrorMatches(
-            exception ->
-                isResponseStatusException(exception, BAD_REQUEST_CODE, payment.getMessage()))
-        .verify();
+    var exception =
+        assertThrows(
+            ResponseStatusException.class,
+            () -> {
+              createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder);
+            });
+    assertThat(exception.getStatusCode()).isEqualTo(BAD_REQUEST_CODE);
+    assertThat(exception.getMessage()).isEqualTo(payment.getMessage());
 
     then(getCustomerService).should(times(1)).getCustomer(eq(createOrder.getCustomerUrl()));
     then(getCustomerAddressService)
@@ -169,19 +174,21 @@ public class CreateOrderUseCaseTests extends BaseTests {
     CustomerCard customerCard = from(CustomerCard.class).gimme(CUSTOMER_CARD);
     List<CartItem> cartItems = List.of();
 
-    given(getCustomerService.getCustomer(anyString())).willReturn(Mono.just(customer));
+    given(getCustomerService.getCustomer(anyString())).willReturn(new AsyncResult<>(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString()))
-        .willReturn(Mono.just(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString())).willReturn(Mono.just(customerCard));
-    given(getCartItemsService.getCartItems(anyString())).willReturn(Flux.fromIterable(cartItems));
+        .willReturn(new AsyncResult<>(customerAddress));
+    given(getCustomerCardService.getCustomerCard(anyString()))
+        .willReturn(new AsyncResult<>(customerCard));
+    given(getCartItemsService.getCartItems(anyString())).willReturn(new AsyncResult<>(cartItems));
 
-    create(createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder))
-        .expectSubscription()
-        .expectErrorMatches(
-            exception ->
-                isResponseStatusException(
-                    exception, BAD_REQUEST_CODE, "There aren't items in the cart"))
-        .verify();
+    var exception =
+        assertThrows(
+            ResponseStatusException.class,
+            () -> {
+              createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder);
+            });
+    assertThat(exception.getStatusCode()).isEqualTo(BAD_REQUEST_CODE);
+    assertThat(exception.getMessage()).isEqualTo("There aren't items in the cart");
 
     then(getCustomerService).should(times(1)).getCustomer(eq(createOrder.getCustomerUrl()));
     then(getCustomerAddressService)
@@ -199,29 +206,21 @@ public class CreateOrderUseCaseTests extends BaseTests {
   void shouldThrowErrorWhenGetCustomerThrowsError() {
     var createOrder = getCreateOrder();
 
-    CustomerAddress customerAddress = from(CustomerAddress.class).gimme(CUSTOMER_ADDRESS);
-    CustomerCard customerCard = from(CustomerCard.class).gimme(CUSTOMER_CARD);
-    List<CartItem> cartItems =
-        List.of(from(CartItem.class).gimme(CART_ITEM1), from(CartItem.class).gimme(CART_ITEM3));
-
     given(getCustomerService.getCustomer(anyString()))
-        .willReturn(Mono.error(new RuntimeException(ERROR_MESSAGE)));
-    given(getCustomerAddressService.getCustomerAddress(anyString()))
-        .willReturn(Mono.just(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString())).willReturn(Mono.just(customerCard));
-    given(getCartItemsService.getCartItems(anyString())).willReturn(Flux.fromIterable(cartItems));
+        .willThrow(new RuntimeException(ERROR_MESSAGE));
 
-    create(createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder))
-        .expectSubscription()
-        .expectErrorMatches(exception -> isRuntimeException(exception))
-        .verify();
+    var exception =
+        assertThrows(
+            RuntimeException.class,
+            () -> {
+              createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder);
+            });
+    assertThat(exception.getMessage()).isEqualTo(ERROR_MESSAGE);
 
     then(getCustomerService).should(times(1)).getCustomer(eq(createOrder.getCustomerUrl()));
-    then(getCustomerAddressService)
-        .should(times(1))
-        .getCustomerAddress(eq(createOrder.getAddressUrl()));
-    then(getCustomerCardService).should(times(1)).getCustomerCard(eq(createOrder.getCardUrl()));
-    then(getCartItemsService).should(times(1)).getCartItems(eq(createOrder.getItemsUrl()));
+    then(getCustomerAddressService).should(never()).getCustomerAddress(anyString());
+    then(getCustomerCardService).should(never()).getCustomerCard(anyString());
+    then(getCartItemsService).should(never()).getCartItems(anyString());
     then(verifyPaymentService).should(never()).verify(anyString(), anyFloat());
     then(addShippingOrderService).should(never()).add(anyString());
     then(createOrderRepository).should(never()).create(any(OrderEntity.class));
@@ -233,27 +232,25 @@ public class CreateOrderUseCaseTests extends BaseTests {
     var createOrder = getCreateOrder();
 
     Customer customer = from(Customer.class).gimme(CUSTOMER);
-    CustomerCard customerCard = from(CustomerCard.class).gimme(CUSTOMER_CARD);
-    List<CartItem> cartItems =
-        List.of(from(CartItem.class).gimme(CART_ITEM1), from(CartItem.class).gimme(CART_ITEM3));
 
-    given(getCustomerService.getCustomer(anyString())).willReturn(Mono.just(customer));
+    given(getCustomerService.getCustomer(anyString())).willReturn(new AsyncResult<>(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString()))
-        .willReturn(Mono.error(new RuntimeException(ERROR_MESSAGE)));
-    given(getCustomerCardService.getCustomerCard(anyString())).willReturn(Mono.just(customerCard));
-    given(getCartItemsService.getCartItems(anyString())).willReturn(Flux.fromIterable(cartItems));
+        .willThrow(new RuntimeException(ERROR_MESSAGE));
 
-    create(createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder))
-        .expectSubscription()
-        .expectErrorMatches(exception -> isRuntimeException(exception))
-        .verify();
+    var exception =
+        assertThrows(
+            RuntimeException.class,
+            () -> {
+              createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder);
+            });
+    assertThat(exception.getMessage()).isEqualTo(ERROR_MESSAGE);
 
     then(getCustomerService).should(times(1)).getCustomer(eq(createOrder.getCustomerUrl()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(eq(createOrder.getAddressUrl()));
-    then(getCustomerCardService).should(times(1)).getCustomerCard(eq(createOrder.getCardUrl()));
-    then(getCartItemsService).should(times(1)).getCartItems(eq(createOrder.getItemsUrl()));
+    then(getCustomerCardService).should(never()).getCustomerCard(anyString());
+    then(getCartItemsService).should(never()).getCartItems(anyString());
     then(verifyPaymentService).should(never()).verify(anyString(), anyFloat());
     then(addShippingOrderService).should(never()).add(anyString());
     then(createOrderRepository).should(never()).create(any(OrderEntity.class));
@@ -266,27 +263,27 @@ public class CreateOrderUseCaseTests extends BaseTests {
 
     Customer customer = from(Customer.class).gimme(CUSTOMER);
     CustomerAddress customerAddress = from(CustomerAddress.class).gimme(CUSTOMER_ADDRESS);
-    List<CartItem> cartItems =
-        List.of(from(CartItem.class).gimme(CART_ITEM1), from(CartItem.class).gimme(CART_ITEM3));
 
-    given(getCustomerService.getCustomer(anyString())).willReturn(Mono.just(customer));
+    given(getCustomerService.getCustomer(anyString())).willReturn(new AsyncResult<>(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString()))
-        .willReturn(Mono.just(customerAddress));
+        .willReturn(new AsyncResult<>(customerAddress));
     given(getCustomerCardService.getCustomerCard(anyString()))
-        .willReturn(Mono.error(new RuntimeException(ERROR_MESSAGE)));
-    given(getCartItemsService.getCartItems(anyString())).willReturn(Flux.fromIterable(cartItems));
+        .willThrow(new RuntimeException(ERROR_MESSAGE));
 
-    create(createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder))
-        .expectSubscription()
-        .expectErrorMatches(exception -> isRuntimeException(exception))
-        .verify();
+    var exception =
+        assertThrows(
+            RuntimeException.class,
+            () -> {
+              createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder);
+            });
+    assertThat(exception.getMessage()).isEqualTo(ERROR_MESSAGE);
 
     then(getCustomerService).should(times(1)).getCustomer(eq(createOrder.getCustomerUrl()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(eq(createOrder.getAddressUrl()));
     then(getCustomerCardService).should(times(1)).getCustomerCard(eq(createOrder.getCardUrl()));
-    then(getCartItemsService).should(times(1)).getCartItems(eq(createOrder.getItemsUrl()));
+    then(getCartItemsService).should(never()).getCartItems(anyString());
     then(verifyPaymentService).should(never()).verify(anyString(), anyFloat());
     then(addShippingOrderService).should(never()).add(anyString());
     then(createOrderRepository).should(never()).create(any(OrderEntity.class));
@@ -301,17 +298,21 @@ public class CreateOrderUseCaseTests extends BaseTests {
     CustomerAddress customerAddress = from(CustomerAddress.class).gimme(CUSTOMER_ADDRESS);
     CustomerCard customerCard = from(CustomerCard.class).gimme(CUSTOMER_CARD);
 
-    given(getCustomerService.getCustomer(anyString())).willReturn(Mono.just(customer));
+    given(getCustomerService.getCustomer(anyString())).willReturn(new AsyncResult<>(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString()))
-        .willReturn(Mono.just(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString())).willReturn(Mono.just(customerCard));
+        .willReturn(new AsyncResult<>(customerAddress));
+    given(getCustomerCardService.getCustomerCard(anyString()))
+        .willReturn(new AsyncResult<>(customerCard));
     given(getCartItemsService.getCartItems(anyString()))
-        .willReturn(Flux.error(new RuntimeException(ERROR_MESSAGE)));
+        .willThrow(new RuntimeException(ERROR_MESSAGE));
 
-    create(createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder))
-        .expectSubscription()
-        .expectErrorMatches(exception -> isRuntimeException(exception))
-        .verify();
+    var exception =
+        assertThrows(
+            RuntimeException.class,
+            () -> {
+              createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder);
+            });
+    assertThat(exception.getMessage()).isEqualTo(ERROR_MESSAGE);
 
     then(getCustomerService).should(times(1)).getCustomer(eq(createOrder.getCustomerUrl()));
     then(getCustomerAddressService)
@@ -337,18 +338,22 @@ public class CreateOrderUseCaseTests extends BaseTests {
             from(CartItem.class).gimme(CART_ITEM2),
             from(CartItem.class).gimme(CART_ITEM3));
 
-    given(getCustomerService.getCustomer(anyString())).willReturn(Mono.just(customer));
+    given(getCustomerService.getCustomer(anyString())).willReturn(new AsyncResult<>(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString()))
-        .willReturn(Mono.just(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString())).willReturn(Mono.just(customerCard));
-    given(getCartItemsService.getCartItems(anyString())).willReturn(Flux.fromIterable(cartItems));
+        .willReturn(new AsyncResult<>(customerAddress));
+    given(getCustomerCardService.getCustomerCard(anyString()))
+        .willReturn(new AsyncResult<>(customerCard));
+    given(getCartItemsService.getCartItems(anyString())).willReturn(new AsyncResult<>(cartItems));
     given(verifyPaymentService.verify(anyString(), anyFloat()))
-        .willReturn(Mono.error(new RuntimeException(ERROR_MESSAGE)));
+        .willThrow(new RuntimeException(ERROR_MESSAGE));
 
-    create(createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder))
-        .expectSubscription()
-        .expectErrorMatches(exception -> isRuntimeException(exception))
-        .verify();
+    var exception =
+        assertThrows(
+            RuntimeException.class,
+            () -> {
+              createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder);
+            });
+    assertThat(exception.getMessage()).isEqualTo(ERROR_MESSAGE);
 
     then(getCustomerService).should(times(1)).getCustomer(eq(createOrder.getCustomerUrl()));
     then(getCustomerAddressService)
@@ -373,19 +378,24 @@ public class CreateOrderUseCaseTests extends BaseTests {
         List.of(from(CartItem.class).gimme(CART_ITEM1), from(CartItem.class).gimme(CART_ITEM3));
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
-    given(getCustomerService.getCustomer(anyString())).willReturn(Mono.just(customer));
+    given(getCustomerService.getCustomer(anyString())).willReturn(new AsyncResult<>(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString()))
-        .willReturn(Mono.just(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString())).willReturn(Mono.just(customerCard));
-    given(getCartItemsService.getCartItems(anyString())).willReturn(Flux.fromIterable(cartItems));
-    given(verifyPaymentService.verify(anyString(), anyFloat())).willReturn(Mono.just(payment));
+        .willReturn(new AsyncResult<>(customerAddress));
+    given(getCustomerCardService.getCustomerCard(anyString()))
+        .willReturn(new AsyncResult<>(customerCard));
+    given(getCartItemsService.getCartItems(anyString())).willReturn(new AsyncResult<>(cartItems));
+    given(verifyPaymentService.verify(anyString(), anyFloat()))
+        .willReturn(new AsyncResult<>(payment));
     given(createOrderRepository.create(any(OrderEntity.class)))
-        .willReturn(Mono.error(new RuntimeException(ERROR_MESSAGE)));
+        .willThrow(new RuntimeException(ERROR_MESSAGE));
 
-    create(createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder))
-        .expectSubscription()
-        .expectErrorMatches(exception -> isRuntimeException(exception))
-        .verify();
+    var exception =
+        assertThrows(
+            RuntimeException.class,
+            () -> {
+              createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder);
+            });
+    assertThat(exception.getMessage()).isEqualTo(ERROR_MESSAGE);
 
     then(getCustomerService).should(times(1)).getCustomer(eq(createOrder.getCustomerUrl()));
     then(getCustomerAddressService)
@@ -422,20 +432,24 @@ public class CreateOrderUseCaseTests extends BaseTests {
         List.of(from(CartItem.class).gimme(CART_ITEM1), from(CartItem.class).gimme(CART_ITEM3));
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
-    given(getCustomerService.getCustomer(anyString())).willReturn(Mono.just(customer));
+    given(getCustomerService.getCustomer(anyString())).willReturn(new AsyncResult<>(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString()))
-        .willReturn(Mono.just(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString())).willReturn(Mono.just(customerCard));
-    given(getCartItemsService.getCartItems(anyString())).willReturn(Flux.fromIterable(cartItems));
-    given(verifyPaymentService.verify(anyString(), anyFloat())).willReturn(Mono.just(payment));
-    given(createOrderRepository.create(any(OrderEntity.class))).willReturn(Mono.just(order));
-    given(addShippingOrderService.add(anyString()))
-        .willReturn(Mono.error(new RuntimeException(ERROR_MESSAGE)));
+        .willReturn(new AsyncResult<>(customerAddress));
+    given(getCustomerCardService.getCustomerCard(anyString()))
+        .willReturn(new AsyncResult<>(customerCard));
+    given(getCartItemsService.getCartItems(anyString())).willReturn(new AsyncResult<>(cartItems));
+    given(verifyPaymentService.verify(anyString(), anyFloat()))
+        .willReturn(new AsyncResult<>(payment));
+    given(createOrderRepository.create(any(OrderEntity.class))).willReturn(order);
+    given(addShippingOrderService.add(anyString())).willThrow(new RuntimeException(ERROR_MESSAGE));
 
-    create(createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder))
-        .expectSubscription()
-        .expectErrorMatches(exception -> isRuntimeException(exception))
-        .verify();
+    var exception =
+        assertThrows(
+            RuntimeException.class,
+            () -> {
+              createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, createOrder);
+            });
+    assertThat(exception.getMessage()).isEqualTo(ERROR_MESSAGE);
 
     then(getCustomerService).should(times(1)).getCustomer(eq(createOrder.getCustomerUrl()));
     then(getCustomerAddressService)
@@ -458,19 +472,6 @@ public class CreateOrderUseCaseTests extends BaseTests {
     assertThat(capturedOrder.getTotalAmount()).isEqualTo(order.getTotalAmount());
     assertThat(capturedOrder.getOrderId()).isNull();
     assertThat(capturedOrder.getRegistrationDate()).isNotNull();
-  }
-
-  private static boolean isResponseStatusException(
-      Throwable throwable, int statusCode, String message) {
-    if (!ResponseStatusException.class.equals(throwable.getClass())) return false;
-    var exception = (ResponseStatusException) throwable;
-    return statusCode == exception.getStatusCode() && exception.getMessage().equals(message);
-  }
-
-  private static boolean isRuntimeException(Throwable throwable) {
-    if (!RuntimeException.class.equals(throwable.getClass())) return false;
-    var exception = (RuntimeException) throwable;
-    return exception.getMessage().equals(ERROR_MESSAGE);
   }
 
   private static CreateOrderCommand getCreateOrder() {

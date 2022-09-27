@@ -1,9 +1,9 @@
 package br.com.cams7.orders.core.port.out;
 
 import br.com.cams7.orders.core.domain.OrderEntity;
-import reactor.core.publisher.Flux;
+import java.util.List;
 
 @FunctionalInterface
 public interface GetOrdersByCountryRepositoryPort {
-  Flux<OrderEntity> getOrders(String country);
+  List<OrderEntity> getOrders(String country);
 }

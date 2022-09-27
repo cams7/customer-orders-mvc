@@ -1,9 +1,9 @@
 package br.com.cams7.orders.core.port.out;
 
 import br.com.cams7.orders.core.domain.CustomerAddress;
-import reactor.core.publisher.Mono;
+import java.util.concurrent.Future;
 
 @FunctionalInterface
 public interface GetCustomerAddressServicePort {
-  Mono<CustomerAddress> getCustomerAddress(String addressUrl);
+  Future<CustomerAddress> getCustomerAddress(String addressUrl);
 }
