@@ -35,7 +35,7 @@ public abstract class BaseIntegrationTests extends BaseWebClientTests {
   protected static final String INTERNAL_SERVER_ERROR_NAME = "Internal Server Error";
   protected static final int INTERNAL_SERVER_ERROR_CODE = 500;
 
-  @Autowired protected MongoTemplate mongoOperations;
+  @Autowired protected MongoTemplate mongoTemplate;
 
   @Autowired private WebApplicationContext applicationContext;
   protected MockMvc mockMvc;
@@ -48,7 +48,7 @@ public abstract class BaseIntegrationTests extends BaseWebClientTests {
   }
 
   protected void dropCollection(String country, String collectionName) {
-    mongoOperations.dropCollection(getCollectionName(country, collectionName));
+    mongoTemplate.dropCollection(getCollectionName(country, collectionName));
   }
 
   protected static String getCollectionName(String country, String collectionName) {

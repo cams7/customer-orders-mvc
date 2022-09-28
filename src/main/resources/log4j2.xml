@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration status="INFO">
+    <Properties>
+        <Property name="LOG_PATTERN">
+            %d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${hostName} --- [serviceName: customer-orders] [requestTraceId: %X{requestTraceId}] [country: %X{country}] --- [%15.15t] %-40.40c{1.}: %m%n%ex
+        </Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <Routing name="Router">
+            <Routes pattern="$${env:LOG_APPENDER:-CONSOLE}">
+                <Route ref="Console" key="CONSOLE"/>
+            </Routes>
+        </Routing>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Router"/>
+        </Root>
+    </Loggers>
+</Configuration>

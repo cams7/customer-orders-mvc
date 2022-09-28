@@ -3,12 +3,14 @@ const BAD_REQUEST = 400;
 const NOT_ACCEPTABLE = 406;
 const INTERNAL_SERVER_ERROR = 500;
 
-module.exports = (req, res, next) => {
+module.exports = async (req, res, next) => {
   const path = req._parsedUrl.path;
 
   switch (req.method) {
     case 'POST':
       if(path.match(/^\/payments$/)) {
+        const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+        await delay(10000);
         verifyPayment(req, res, path); 
       }
       break;

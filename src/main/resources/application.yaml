@@ -9,6 +9,10 @@ spring:
       uri: ${MONGODB_CONNECTION_STRING:mongodb://localhost:27017}
       database: customer-orders
       
+logging:
+  level:
+    ROOT: ${LOG_ROOT_LEVEL:INFO}
+      
 api:
   paymentUrl: ${PAYMENT_URL:http://localhost:3002/payments}
   shippingUrl: ${SHIPPING_URL:http://localhost:3003/shippings}

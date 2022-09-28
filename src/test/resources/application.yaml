@@ -7,5 +7,9 @@ api:
   paymentUrl: http://test/payments
   shippingUrl: http://test/shippings
   
+logging:
+  level:
+    ROOT: off
+  
 zone:
   ids: DO:"America/Dominica", BR:"America/Sao_Paulo", AR:"America/Buenos_Aires", EN:"America/New_York", CO:"America/Bogota", EC:"America/Guayaquil", PE:"America/Lima", ZA:"Africa/Johannesburg", MX:"America/Mexico_City"

@@ -199,7 +199,7 @@ public class OrderControllerTests extends BaseIntegrationTests {
         .andExpect(jsonPath("$").doesNotExist());
 
     var total =
-        mongoOperations.count(
+        mongoTemplate.count(
             new Query().addCriteria(where("id").is(model.getId())),
             OrderModel.class,
             getCollectionName(CUSTOMER_ADDRESS_COUNTRY, COLLECTION_NAME));
@@ -234,7 +234,7 @@ public class OrderControllerTests extends BaseIntegrationTests {
         .andExpect(jsonPath("$").doesNotExist());
 
     var total =
-        mongoOperations.count(
+        mongoTemplate.count(
             new Query().addCriteria(where("id").is(model.getId())),
             OrderModel.class,
             getCollectionName(CUSTOMER_ADDRESS_COUNTRY, COLLECTION_NAME));
@@ -306,7 +306,7 @@ public class OrderControllerTests extends BaseIntegrationTests {
     ;
 
     var total =
-        mongoOperations.count(
+        mongoTemplate.count(
             new Query().addCriteria(where("id").exists(true)),
             OrderModel.class,
             getCollectionName(CUSTOMER_ADDRESS_COUNTRY, COLLECTION_NAME));
@@ -359,7 +359,7 @@ public class OrderControllerTests extends BaseIntegrationTests {
         .andExpect(jsonPath(EXCEPTION_ATTRIBUTE, is(ResponseStatusException.class.getName())));
 
     var total =
-        mongoOperations.count(
+        mongoTemplate.count(
             new Query().addCriteria(where("id").exists(true)),
             OrderModel.class,
             getCollectionName(CUSTOMER_ADDRESS_COUNTRY, COLLECTION_NAME));
@@ -407,7 +407,7 @@ public class OrderControllerTests extends BaseIntegrationTests {
         .andExpect(jsonPath(EXCEPTION_ATTRIBUTE, is(ResponseStatusException.class.getName())));
 
     var total =
-        mongoOperations.count(
+        mongoTemplate.count(
             new Query().addCriteria(where("id").exists(true)),
             OrderModel.class,
             getCollectionName(CUSTOMER_ADDRESS_COUNTRY, COLLECTION_NAME));
@@ -441,7 +441,7 @@ public class OrderControllerTests extends BaseIntegrationTests {
         .andExpect(jsonPath(ERRORS0_FIELD_ATTRIBUTE, is("customerUrl")));
 
     var total =
-        mongoOperations.count(
+        mongoTemplate.count(
             new Query().addCriteria(where("id").exists(true)),
             OrderModel.class,
             getCollectionName(CUSTOMER_ADDRESS_COUNTRY, COLLECTION_NAME));
@@ -451,6 +451,6 @@ public class OrderControllerTests extends BaseIntegrationTests {
 
   private void createOrderCollection(String country, OrderModel order) {
     var collectionName = getCollectionName(country, COLLECTION_NAME);
-    mongoOperations.insert(order, collectionName);
+    mongoTemplate.insert(order, collectionName);
   }
 }
