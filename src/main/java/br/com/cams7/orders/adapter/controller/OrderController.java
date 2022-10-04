@@ -219,7 +219,7 @@ public class OrderController {
       @RequestHeader(COUNTRY_HEADER) String country,
       @RequestHeader(REQUEST_TRACE_ID_HEADER) String requestTraceId,
       @RequestBody CreateOrderRequest request) {
-    return getOrder(createOrderUseCase.execute(country, getCreateOrder(request)));
+    return getOrder(createOrderUseCase.execute(country, requestTraceId, getCreateOrder(request)));
   }
 
   private OrderResponse getOrder(OrderEntity entity) {

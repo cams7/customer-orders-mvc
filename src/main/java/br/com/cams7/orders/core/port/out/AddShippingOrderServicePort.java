@@ -4,5 +4,5 @@ import java.util.concurrent.Future;
 
 @FunctionalInterface
 public interface AddShippingOrderServicePort {
-  Future<String> add(String orderId);
+  Future<String> add(String country, String requestTraceId, String orderId);
 }

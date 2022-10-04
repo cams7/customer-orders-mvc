@@ -4,5 +4,5 @@ import br.com.cams7.orders.core.domain.OrderEntity;
 
 @FunctionalInterface
 public interface CreateOrderRepositoryPort {
-  OrderEntity create(OrderEntity order);
+  OrderEntity create(String country, OrderEntity order);
 }

@@ -2,7 +2,7 @@
 <Configuration status="INFO">
     <Properties>
         <Property name="LOG_PATTERN">
-            %d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${hostName} --- [serviceName: customer-orders] [requestTraceId: %X{requestTraceId}] [country: %X{country}] --- [%15.15t] %-40.40c{1.}: %m%n%ex
+            %d{yyyy-MM-dd HH:mm:ss.SSS} %5p ${hostName} --- [serviceName: customer-orders-mvc] [requestTraceId: %X{requestTraceId}] [country: %X{country}] --- [%15.15t] %-40.40c{1.}: %m%n%ex
         </Property>
     </Properties>
     <Appenders>

@@ -5,5 +5,5 @@ import br.com.cams7.orders.core.port.in.params.CreateOrderCommand;
 
 @FunctionalInterface
 public interface CreateOrderUseCasePort {
-  OrderEntity execute(String country, CreateOrderCommand order);
+  OrderEntity execute(String country, String requestTraceId, CreateOrderCommand order);
 }

@@ -53,8 +53,7 @@ public class OrderRepository
   }
 
   @Override
-  public OrderEntity create(OrderEntity order) {
-    var country = order.getAddress().getCountry();
+  public OrderEntity create(String country, OrderEntity order) {
     return getOrder(mongoTemplate.insert(getOrder(order), getCollectionName(country)));
   }
 

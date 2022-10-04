@@ -34,26 +34,19 @@
       "quantity": 1,
       "unitPrice": 27,
       "cartId": "bad2ba11-19b2-4af8-b41e-dccc47f69929"
-    },
+    },    
     {
-      "id": "0e546d7d-eece-4f9e-87c4-a9ab596b48f5",
-      "productId": "f4d8d296-3ac8-4073-beef-c703cc5030f2",
-      "quantity": 2,
-      "unitPrice": 9,
-      "cartId": "f716e351-5df1-4c9c-8324-bd12866e2900"
-    },
-    {
-      "id": "515a1079-20dc-43a9-ad99-bae461e31d99",
-      "productId": "6799d4e5-23aa-4da2-b10e-4a09ee053ceb",
-      "quantity": 5,
-      "unitPrice": 11.5,
-      "cartId": "f716e351-5df1-4c9c-8324-bd12866e2900"
-    },
-    {
-      "id": "518372ce-c57c-479f-9f7c-8dfa8a3ec09e",
-      "productId": "2c22ea64-39f1-474b-92d2-b92684dedaa0",
+      "id": "cd3e20f9-0608-4772-b6c6-c4b23926d92b",
+      "productId": "9aff4cc5-f921-4157-8976-41ceae93ae54",
       "quantity": 1,
-      "unitPrice": 27,
+      "unitPrice": 18,
+      "cartId": "f716e351-5df1-4c9c-8324-bd12866e2900"
+    },
+    {
+      "id": "52bbfe68-a6c3-4f72-92fe-5fb7bcc2ad3e",
+      "productId": "2bd4204f-26f5-43c0-81c0-ba61230d6131",
+      "quantity": 2,
+      "unitPrice": 21,
       "cartId": "f716e351-5df1-4c9c-8324-bd12866e2900"
     },
     {

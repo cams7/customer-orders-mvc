@@ -1,0 +1,5 @@
+wrk.method = "POST"
+wrk.body = "{\"customerUrl\": \"http://localhost:3000/customers/7329d57a-4028-41cc-9626-a0c41246a623\",\"addressUrl\": \"http://localhost:3000/addresses/594fbca6-270c-4299-8b2c-084da56c756c\",\"cardUrl\": \"http://localhost:3000/cards/cfecdbd8-6dd1-45ae-a453-1adc20a6b065\",\"itemsUrl\": \"http://localhost:3001/carts/ca36c27b-d9f9-457a-be0b-2aab214cda65/items\"}"
+wrk.headers["Content-Type"] = "application/json"
+wrk.headers["country"] = "BR"
+wrk.headers["requestTraceId"] = "123BR"

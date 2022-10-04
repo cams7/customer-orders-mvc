@@ -5,5 +5,5 @@ import java.util.concurrent.Future;
 
 @FunctionalInterface
 public interface VerifyPaymentServicePort {
-  Future<Payment> verify(String customerId, Float amount);
+  Future<Payment> verify(String country, String requestTraceId, String customerId, Float amount);
 }

@@ -37,32 +37,40 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
   private final CreateOrderRepositoryPort createOrderRepository;
 
   @Override
-  public OrderEntity execute(String country, CreateOrderCommand command) {
+  public OrderEntity execute(String country, String requestTraceId, CreateOrderCommand command) {
     try {
       Customer customer =
-          getCustomerService.getCustomer(command.getCustomerUrl()).get(timeout, SECONDS);
+          getCustomerService
+              .getCustomer(country, requestTraceId, command.getCustomerUrl())
+              .get(timeout, SECONDS);
       var address =
           getCustomerAddressService
-              .getCustomerAddress(command.getAddressUrl())
+              .getCustomerAddress(country, requestTraceId, command.getAddressUrl())
               .get(timeout, SECONDS);
-      var card = getCustomerCardService.getCustomerCard(command.getCardUrl()).get(timeout, SECONDS);
+      var card =
+          getCustomerCardService
+              .getCustomerCard(country, requestTraceId, command.getCardUrl())
+              .get(timeout, SECONDS);
 
       var order = new OrderEntity();
       order.setCustomer(customer);
       order.setAddress(address);
       order.setCard(card);
 
-      var items = getCartItemsService.getCartItems(command.getItemsUrl()).get(timeout, SECONDS);
+      var items =
+          getCartItemsService
+              .getCartItems(country, requestTraceId, command.getItemsUrl())
+              .get(timeout, SECONDS);
 
       order.setItems(items);
 
       order = verifyCartItems(order);
 
-      order = verifyPayment(order);
+      order = verifyPayment(country, requestTraceId, order);
 
-      order = createOrder(order);
+      order = createOrder(country, order);
 
-      order = addShippingOrder(order);
+      order = addShippingOrder(country, requestTraceId, order);
 
       return order;
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -77,27 +85,30 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
     return order;
   }
 
-  private OrderEntity verifyPayment(OrderEntity order)
+  private OrderEntity verifyPayment(String country, String requestTraceId, OrderEntity order)
       throws InterruptedException, ExecutionException, TimeoutException {
     var customerId = order.getCustomer().getCustomerId();
     var totalAmount = getTotalAmount(order);
-    var payment = verifyPaymentService.verify(customerId, totalAmount).get(timeout, SECONDS);
+    var payment =
+        verifyPaymentService
+            .verify(country, requestTraceId, customerId, totalAmount)
+            .get(timeout, SECONDS);
 
     return order.withTotalAmount(totalAmount).withPayment(payment);
   }
 
-  private OrderEntity createOrder(OrderEntity order) {
+  private OrderEntity createOrder(String country, OrderEntity order) {
     var payment = order.getPayment();
     if (!payment.isAuthorised()) {
       throw new ResponseStatusException(payment.getMessage(), BAD_REQUEST_CODE);
     }
     order.setRegistrationDate(ZonedDateTime.now());
-    return createOrderRepository.create(order);
+    return createOrderRepository.create(country, order);
   }
 
-  private OrderEntity addShippingOrder(OrderEntity order)
+  private OrderEntity addShippingOrder(String country, String requestTraceId, OrderEntity order)
       throws InterruptedException, ExecutionException, TimeoutException {
-    addShippingOrderService.add(order.getOrderId()).get(timeout, SECONDS);
+    addShippingOrderService.add(country, requestTraceId, order.getOrderId()).get(timeout, SECONDS);
     return order;
   }
 

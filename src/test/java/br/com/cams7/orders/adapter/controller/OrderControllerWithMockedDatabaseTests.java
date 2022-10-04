@@ -175,7 +175,7 @@ public class OrderControllerWithMockedDatabaseTests extends BaseIntegrationTests
         new ParameterizedTypeReference<List<CartItemResponse>>() {});
     mockPost(PAYMENT_URL, paymentResponse);
 
-    given(createOrderRepository.create(any(OrderEntity.class)))
+    given(createOrderRepository.create(anyString(), any(OrderEntity.class)))
         .willThrow(new MongoException(ERROR_MESSAGE));
 
     mockMvc
@@ -193,7 +193,9 @@ public class OrderControllerWithMockedDatabaseTests extends BaseIntegrationTests
         .andExpect(jsonPath(ERROR_ATTRIBUTE, is(INTERNAL_SERVER_ERROR_NAME)))
         .andExpect(jsonPath(REQUESTID_ATTRIBUTE, is(REQUEST_TRACE_ID)));
 
-    then(createOrderRepository).should(times(1)).create(orderEntityCaptor.capture());
+    then(createOrderRepository)
+        .should(times(1))
+        .create(eq(CUSTOMER_ADDRESS_COUNTRY), orderEntityCaptor.capture());
     var capturedOrder = orderEntityCaptor.getValue();
 
     assertThat(capturedOrder.getCustomer()).isEqualTo(order.getCustomer());

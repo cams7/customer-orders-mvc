@@ -21,11 +21,13 @@ public class CartService extends BaseWebclient implements GetCartItemsServicePor
   private final ModelMapper modelMapper;
 
   @Override
-  public Future<List<CartItem>> getCartItems(String itemsUrl) {
+  public Future<List<CartItem>> getCartItems(
+      String country, String requestTraceId, String itemsUrl) {
     var cartItems =
         restTemplate
             .exchange(
-                getRequest(itemsUrl), new ParameterizedTypeReference<List<CartItemResponse>>() {})
+                getRequest(itemsUrl, country, requestTraceId),
+                new ParameterizedTypeReference<List<CartItemResponse>>() {})
             .getBody()
             .stream()
             .map(this::getCartItem)

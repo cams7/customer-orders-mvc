@@ -5,5 +5,5 @@ import java.util.concurrent.Future;
 
 @FunctionalInterface
 public interface GetCustomerCardServicePort {
-  Future<CustomerCard> getCustomerCard(String cardUrl);
+  Future<CustomerCard> getCustomerCard(String country, String requestTraceId, String cardUrl);
 }

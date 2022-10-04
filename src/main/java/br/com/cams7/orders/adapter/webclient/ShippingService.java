@@ -20,10 +20,12 @@ public class ShippingService extends BaseWebclient implements AddShippingOrderSe
   private String shippingUrl;
 
   @Override
-  public Future<String> add(String orderId) {
+  public Future<String> add(String country, String requestTraceId, String orderId) {
     var shippingId =
         restTemplate
-            .exchange(getRequest(shippingUrl, new ShippingRequest(orderId)), ShippingResponse.class)
+            .exchange(
+                getRequest(shippingUrl, country, requestTraceId, new ShippingRequest(orderId)),
+                ShippingResponse.class)
             .getBody()
             .getId();
     return new AsyncResult<>(shippingId);

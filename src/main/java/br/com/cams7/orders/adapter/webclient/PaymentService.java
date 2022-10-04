@@ -23,12 +23,17 @@ public class PaymentService extends BaseWebclient implements VerifyPaymentServic
   private String paymentUrl;
 
   @Override
-  public Future<Payment> verify(String customerId, Float amount) {
+  public Future<Payment> verify(
+      String country, String requestTraceId, String customerId, Float amount) {
     var payment =
         getPayment(
             restTemplate
                 .exchange(
-                    getRequest(paymentUrl, new PaymentRequest(customerId, amount)),
+                    getRequest(
+                        paymentUrl,
+                        country,
+                        requestTraceId,
+                        new PaymentRequest(customerId, amount)),
                     PaymentResponse.class)
                 .getBody());
     return new AsyncResult<>(payment);

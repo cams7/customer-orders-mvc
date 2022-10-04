@@ -25,26 +25,35 @@ public class CustomerService extends BaseWebclient
   private final ModelMapper modelMapper;
 
   @Override
-  public Future<Customer> getCustomer(String customerUrl) {
+  public Future<Customer> getCustomer(String country, String requestTraceId, String customerUrl) {
     var customer =
         getCustomer(
-            restTemplate.exchange(getRequest(customerUrl), CustomerResponse.class).getBody());
+            restTemplate
+                .exchange(getRequest(customerUrl, country, requestTraceId), CustomerResponse.class)
+                .getBody());
     return new AsyncResult<>(customer);
   }
 
   @Override
-  public Future<CustomerAddress> getCustomerAddress(String addressUrl) {
+  public Future<CustomerAddress> getCustomerAddress(
+      String country, String requestTraceId, String addressUrl) {
     var customerAddress =
         getCustomerAddress(
-            restTemplate.exchange(getRequest(addressUrl), CustomerAddressResponse.class).getBody());
+            restTemplate
+                .exchange(
+                    getRequest(addressUrl, country, requestTraceId), CustomerAddressResponse.class)
+                .getBody());
     return new AsyncResult<>(customerAddress);
   }
 
   @Override
-  public Future<CustomerCard> getCustomerCard(String cardUrl) {
+  public Future<CustomerCard> getCustomerCard(
+      String country, String requestTraceId, String cardUrl) {
     var customerCard =
         getCustomerCard(
-            restTemplate.exchange(getRequest(cardUrl), CustomerCardResponse.class).getBody());
+            restTemplate
+                .exchange(getRequest(cardUrl, country, requestTraceId), CustomerCardResponse.class)
+                .getBody());
     return new AsyncResult<>(customerCard);
   }
 

@@ -6,5 +6,5 @@ import java.util.concurrent.Future;
 
 @FunctionalInterface
 public interface GetCartItemsServicePort {
-  Future<List<CartItem>> getCartItems(String itemsUrl);
+  Future<List<CartItem>> getCartItems(String country, String requestTraceId, String itemsUrl);
 }

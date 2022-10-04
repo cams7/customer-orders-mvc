@@ -17,8 +17,6 @@ import org.springframework.web.context.WebApplicationContext;
 
 public abstract class BaseIntegrationTests extends BaseWebClientTests {
 
-  protected static final String REQUEST_TRACE_ID = "123";
-
   protected static final String TIMESTAMP_ATTRIBUTE = "$.timestamp";
   protected static final String PATH_ATTRIBUTE = "$.path";
   protected static final String STATUS_ATTRIBUTE = "$.status";

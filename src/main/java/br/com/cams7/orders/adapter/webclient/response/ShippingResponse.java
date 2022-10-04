@@ -11,4 +11,6 @@ public class ShippingResponse {
   private String id;
 
   private String orderId;
+
+  private String country;
 }
