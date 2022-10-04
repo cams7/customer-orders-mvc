@@ -64,6 +64,7 @@ public final class OrderResponseTemplate {
                             CART_ITEM3_PRODUCT_ID, CART_ITEM3_QUANTITY, CART_ITEM3_UNIT_PRICE)));
                 add("registrationDate", REGISTRATION_DATE + "-03:00");
                 add("totalAmount", AUTHORISED_TOTAL_AMOUNT);
+                add("registeredShipping", true);
               }
             });
   }

@@ -41,6 +41,7 @@ import br.com.cams7.orders.core.port.out.CreateOrderRepositoryPort;
 import br.com.cams7.orders.core.port.out.DeleteOrderByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.GetOrderByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.GetOrdersByCountryRepositoryPort;
+import br.com.cams7.orders.core.port.out.UpdateShippingByIdRepositoryPort;
 import com.mongodb.MongoException;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
@@ -64,6 +65,7 @@ public class OrderControllerWithMockedDatabaseTests extends BaseIntegrationTests
   @MockBean private GetOrderByIdRepositoryPort getOrderByIdRepository;
   @MockBean private DeleteOrderByIdRepositoryPort deleteOrderByIdRepository;
   @MockBean private CreateOrderRepositoryPort createOrderRepository;
+  @MockBean private UpdateShippingByIdRepositoryPort updateShippingByIdRepository;
 
   @Captor private ArgumentCaptor<OrderEntity> orderEntityCaptor;
 

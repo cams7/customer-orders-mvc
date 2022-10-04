@@ -30,4 +30,7 @@ public class OrderResponse {
 
   @Schema(example = "64.55", description = "Total order amount")
   private Float totalAmount;
+
+  @Schema(example = "true", description = "Shipping has registered")
+  private Boolean registeredShipping;
 }

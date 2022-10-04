@@ -3,6 +3,7 @@ package br.com.cams7.orders.core;
 import static br.com.cams7.orders.core.port.out.exception.ResponseStatusException.BAD_REQUEST_CODE;
 import static br.com.cams7.orders.core.port.out.exception.ResponseStatusException.INTERNAL_SERVER_ERROR_CODE;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.regex.Pattern.matches;
 
 import br.com.cams7.orders.core.domain.Customer;
 import br.com.cams7.orders.core.domain.OrderEntity;
@@ -14,11 +15,13 @@ import br.com.cams7.orders.core.port.out.GetCartItemsServicePort;
 import br.com.cams7.orders.core.port.out.GetCustomerAddressServicePort;
 import br.com.cams7.orders.core.port.out.GetCustomerCardServicePort;
 import br.com.cams7.orders.core.port.out.GetCustomerServicePort;
+import br.com.cams7.orders.core.port.out.UpdateShippingByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.VerifyPaymentServicePort;
 import br.com.cams7.orders.core.port.out.exception.ResponseStatusException;
 import java.time.ZonedDateTime;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 
@@ -26,6 +29,8 @@ import org.apache.commons.collections4.CollectionUtils;
 public class CreateOrderUseCase implements CreateOrderUseCasePort {
 
   private static final float SHIPPING = 10.5f;
+  private static final String ID_REGEX = "^[\\w\\-]+$";
+
   private static final long timeout = 1l;
 
   private final GetCustomerServicePort getCustomerService;
@@ -35,6 +40,7 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
   private final VerifyPaymentServicePort verifyPaymentService;
   private final AddShippingOrderServicePort addShippingOrderService;
   private final CreateOrderRepositoryPort createOrderRepository;
+  private final UpdateShippingByIdRepositoryPort updateShippingByIdRepository;
 
   @Override
   public OrderEntity execute(String country, String requestTraceId, CreateOrderCommand command) {
@@ -70,7 +76,9 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
 
       order = createOrder(country, order);
 
-      order = addShippingOrder(country, requestTraceId, order);
+      var shippingAndOrder = addShippingOrder(country, requestTraceId, order);
+
+      order = updateShipping(country, shippingAndOrder.shippingId, shippingAndOrder.order);
 
       return order;
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
@@ -106,10 +114,29 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
     return createOrderRepository.create(country, order);
   }
 
-  private OrderEntity addShippingOrder(String country, String requestTraceId, OrderEntity order)
+  private ShippingAndOrder addShippingOrder(
+      String country, String requestTraceId, OrderEntity order)
       throws InterruptedException, ExecutionException, TimeoutException {
-    addShippingOrderService.add(country, requestTraceId, order.getOrderId()).get(timeout, SECONDS);
-    return order;
+    var shippingId =
+        addShippingOrderService
+            .add(country, requestTraceId, order.getOrderId())
+            .get(timeout, SECONDS);
+    return new ShippingAndOrder(shippingId, order);
+  }
+
+  private OrderEntity updateShipping(String country, String shippingId, OrderEntity order) {
+    var orderId = order.getOrderId();
+    var isRegisteredShipping = shippingId != null && matches(ID_REGEX, shippingId);
+    var modifiedCount =
+        updateShippingByIdRepository.updateShipping(country, orderId, isRegisteredShipping);
+
+    if (modifiedCount != null && modifiedCount > 0) {
+      return order.withRegisteredShipping(isRegisteredShipping);
+    }
+
+    throw new ResponseStatusException(
+        String.format("The registeredShipping field of order %s hasn't been changed", orderId),
+        INTERNAL_SERVER_ERROR_CODE);
   }
 
   private static float getTotalAmount(OrderEntity order) {
@@ -118,5 +145,11 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
                 .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
                 .sum()
             + SHIPPING);
+  }
+
+  @AllArgsConstructor
+  private static class ShippingAndOrder {
+    private String shippingId;
+    private OrderEntity order;
   }
 }

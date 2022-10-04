@@ -17,6 +17,7 @@ import br.com.cams7.orders.core.port.out.GetCustomerCardServicePort;
 import br.com.cams7.orders.core.port.out.GetCustomerServicePort;
 import br.com.cams7.orders.core.port.out.GetOrderByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.GetOrdersByCountryRepositoryPort;
+import br.com.cams7.orders.core.port.out.UpdateShippingByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.VerifyPaymentServicePort;
 import br.com.cams7.orders.core.utils.DateUtils;
 import org.modelmapper.ModelMapper;
@@ -70,7 +71,8 @@ public class BeanConfiguration {
       GetCartItemsServicePort getCartItemsService,
       VerifyPaymentServicePort verifyPaymentService,
       AddShippingOrderServicePort addShippingOrderService,
-      CreateOrderRepositoryPort createOrderRepository) {
+      CreateOrderRepositoryPort createOrderRepository,
+      UpdateShippingByIdRepositoryPort updateShippingByIdRepository) {
     return new CreateOrderUseCase(
         getCustomerService,
         getCustomerAddressService,
@@ -78,6 +80,7 @@ public class BeanConfiguration {
         getCartItemsService,
         verifyPaymentService,
         addShippingOrderService,
-        createOrderRepository);
+        createOrderRepository,
+        updateShippingByIdRepository);
   }
 }

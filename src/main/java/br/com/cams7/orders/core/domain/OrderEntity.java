@@ -30,4 +30,6 @@ public class OrderEntity {
   private Float totalAmount;
 
   private Payment payment;
+
+  private Boolean registeredShipping;
 }

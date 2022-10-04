@@ -60,6 +60,7 @@ public final class OrderEntityTemplate {
                     ZonedDateTime.of(LocalDateTime.parse(REGISTRATION_DATE, ISO_DATE_TIME), UTC));
                 add("totalAmount", DECLINED_TOTAL_AMOUNT);
                 add("payment", (Payment) from(Payment.class).gimme(DECLINED_PAYMENT));
+                add("registeredShipping", null);
               }
             })
         .addTemplate(AUTHORISED_ORDER_ENTITY)
@@ -74,6 +75,7 @@ public final class OrderEntityTemplate {
                         (CartItem) from(CartItem.class).gimme(CART_ITEM3)));
                 add("totalAmount", AUTHORISED_TOTAL_AMOUNT);
                 add("payment", (Payment) from(Payment.class).gimme(AUTHORISED_PAYMENT));
+                add("registeredShipping", true);
               }
             });
   }

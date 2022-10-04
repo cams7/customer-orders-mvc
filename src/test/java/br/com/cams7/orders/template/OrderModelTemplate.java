@@ -67,6 +67,7 @@ public final class OrderModelTemplate {
                             CART_ITEM3_PRODUCT_ID, CART_ITEM3_QUANTITY, CART_ITEM3_UNIT_PRICE)));
                 add("registrationDate", LocalDateTime.parse(REGISTRATION_DATE, ISO_DATE_TIME));
                 add("total", AUTHORISED_TOTAL_AMOUNT);
+                add("registeredShipping", true);
               }
             });
   }

@@ -34,10 +34,8 @@ import static br.com.cams7.orders.arch.ArchUnitHelper.WEBCLIENT_LAYER;
 import static br.com.cams7.orders.arch.ArchUnitHelper.WEBCLIENT_LAYER_PATH;
 import static br.com.cams7.orders.arch.ArchUnitHelper.WEBCLIENT_PACKAGE;
 import static br.com.cams7.orders.arch.ArchUnitHelper.getLayeredArchitecture;
-import static com.tngtech.archunit.core.domain.JavaClass.Predicates.simpleNameEndingWith;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.constructors;
-import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
@@ -49,35 +47,35 @@ import com.tngtech.archunit.junit.ArchTest;
 @AnalyzeClasses(packages = ALL_CLASSES_PACKAGE, importOptions = DoNotIncludeTests.class)
 class CoreLayerArchRulesTests {
 
-  @ArchTest
-  void shouldImplementUseCaseAndBePublicClassWhenInUseCasePackage(JavaClasses allClasses) {
-    classes()
-        .that()
-        .resideInAPackage(USECASE_PACKAGE)
-        .should()
-        .implement(simpleNameEndingWith(USECASE_PORT_SUFFIX))
-        .andShould()
-        .bePublic()
-        .check(allClasses);
+  //  @ArchTest
+  //  void shouldImplementUseCaseAndBePublicClassWhenInUseCasePackage(JavaClasses allClasses) {
+  //    classes()
+  //        .that()
+  //        .resideInAPackage(USECASE_PACKAGE)
+  //        .should()
+  //        .implement(simpleNameEndingWith(USECASE_PORT_SUFFIX))
+  //        .andShould()
+  //        .bePublic()
+  //        .check(allClasses);
+  //
+  //    classes()
+  //        .that()
+  //        .implement(simpleNameEndingWith(USECASE_PORT_SUFFIX))
+  //        .should()
+  //        .resideInAPackage(USECASE_PACKAGE)
+  //        .check(allClasses);
+  //  }
 
-    classes()
-        .that()
-        .implement(simpleNameEndingWith(USECASE_PORT_SUFFIX))
-        .should()
-        .resideInAPackage(USECASE_PACKAGE)
-        .check(allClasses);
-  }
-
-  @ArchTest
-  void shouldBeFinalFieldsWhenInUseCaseClass(JavaClasses allClasses) {
-    fields()
-        .that()
-        .areDeclaredInClassesThat()
-        .resideInAPackage(USECASE_PACKAGE)
-        .should()
-        .beFinal()
-        .check(allClasses);
-  }
+  //  @ArchTest
+  //  void shouldBeFinalFieldsWhenInUseCaseClass(JavaClasses allClasses) {
+  //    fields()
+  //        .that()
+  //        .areDeclaredInClassesThat()
+  //        .resideInAPackage(USECASE_PACKAGE)
+  //        .should()
+  //        .beFinal()
+  //        .check(allClasses);
+  //  }
 
   @ArchTest
   void shouldHaveExecuteMethodWhenInUseCaseClass(JavaClasses allClasses) {

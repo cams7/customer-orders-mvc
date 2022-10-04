@@ -29,4 +29,6 @@ public class OrderModel {
   private LocalDateTime registrationDate;
 
   private Float total;
+
+  private Boolean registeredShipping;
 }

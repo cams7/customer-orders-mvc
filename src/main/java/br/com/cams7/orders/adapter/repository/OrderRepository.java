@@ -9,6 +9,7 @@ import br.com.cams7.orders.core.port.out.CreateOrderRepositoryPort;
 import br.com.cams7.orders.core.port.out.DeleteOrderByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.GetOrderByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.GetOrdersByCountryRepositoryPort;
+import br.com.cams7.orders.core.port.out.UpdateShippingByIdRepositoryPort;
 import br.com.cams7.orders.core.utils.DateUtils;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -25,7 +27,8 @@ public class OrderRepository
     implements GetOrdersByCountryRepositoryPort,
         GetOrderByIdRepositoryPort,
         DeleteOrderByIdRepositoryPort,
-        CreateOrderRepositoryPort {
+        CreateOrderRepositoryPort,
+        UpdateShippingByIdRepositoryPort {
 
   private final DateUtils dateUtils;
   private final MongoTemplate mongoTemplate;
@@ -55,6 +58,16 @@ public class OrderRepository
   @Override
   public OrderEntity create(String country, OrderEntity order) {
     return getOrder(mongoTemplate.insert(getOrder(order), getCollectionName(country)));
+  }
+
+  @Override
+  public Long updateShipping(String country, String orderId, Boolean registeredShipping) {
+    var query = new Query(Criteria.where("id").is(orderId));
+    var update = new Update();
+    update.set("registeredShipping", registeredShipping);
+    return mongoTemplate
+        .updateFirst(query, update, OrderModel.class, getCollectionName(country))
+        .getModifiedCount();
   }
 
   private OrderEntity getOrder(OrderModel model) {
