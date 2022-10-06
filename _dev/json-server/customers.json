@@ -7,13 +7,18 @@
     },
     {
       "id": "068fb99e-290a-4b0c-ba55-fb8f0239eed8",
-      "fullName": "Pedro Danilo André da Cruz",
-      "username": "pedro"
+      "fullName": "Juan Benavídez Tercero",
+      "username": "juan"
     },
     {
       "id": "7329d57a-4028-41cc-9626-a0c41246a623",
       "fullName": "Raimundo José Gael Araújo",
       "username": "raimundo"
+    },
+    {
+      "id": "20d54ed5-c94d-48f7-a912-bd85df84a6b9",
+      "fullName": "Santino Colunga",
+      "username": "santino"
     }
   ],
   "addresses": [
@@ -29,11 +34,11 @@
     },
     {
       "id": "1903e7e5-5cca-4cef-9d58-7bc42a2453d7",
-      "number": "340",
-      "street": "9 De Julio 333",
-      "postcode": "",
-      "city": "Córdoba",
-      "federativeUnit": "Córdoba",
+      "number": "2565",
+      "street": "Av Albarellos",
+      "postcode": "C1419DVM",
+      "city": "Buenos Aires",
+      "federativeUnit": "Ciudad Autónoma de Buenos Aires",
       "country": "AR",
       "customerId": "068fb99e-290a-4b0c-ba55-fb8f0239eed8"
     },
@@ -46,6 +51,16 @@
       "federativeUnit": "PA",
       "country": "BR",
       "customerId": "7329d57a-4028-41cc-9626-a0c41246a623"
+    },
+    {
+      "id": "b7cb37d3-0094-483c-88de-b6b6b63c1bc2",
+      "number": "1025",
+      "street": "San Fernando del Valle de Catamarca",
+      "postcode": "4700",
+      "city": "Municipio de San Fernando del Valle de Catamarca",
+      "federativeUnit": "Catamarca",
+      "country": "AR",
+      "customerId": "20d54ed5-c94d-48f7-a912-bd85df84a6b9"
     }
   ],
   "cards": [
@@ -58,9 +73,9 @@
     },
     {
       "id": "42bacbfb-452d-45cd-932e-83a7a2b449ab",
-      "longNum": "5540 2279 7869 4805",
-      "expires": "22/08/2024",
-      "ccv": "898",
+      "longNum": "4539820506340218",
+      "expires": "2027/2",
+      "ccv": "668",
       "customerId": "068fb99e-290a-4b0c-ba55-fb8f0239eed8"
     },
     {
@@ -69,6 +84,13 @@
       "expires": "23/06/2024",
       "ccv": "441",
       "customerId": "7329d57a-4028-41cc-9626-a0c41246a623"
+    },
+    {
+      "id": "aea3692c-e415-4643-b2a2-08e776cd58ea",
+      "longNum": "374301540174281",
+      "expires": "2028/11",
+      "ccv": "275",
+      "customerId": "20d54ed5-c94d-48f7-a912-bd85df84a6b9"
     }
   ]
 }
