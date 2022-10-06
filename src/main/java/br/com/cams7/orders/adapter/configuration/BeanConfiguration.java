@@ -20,14 +20,32 @@ import br.com.cams7.orders.core.port.out.GetOrdersByCountryRepositoryPort;
 import br.com.cams7.orders.core.port.out.UpdateShippingByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.VerifyPaymentServicePort;
 import br.com.cams7.orders.core.utils.DateUtils;
+import java.util.concurrent.Executor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class BeanConfiguration {
+
+  @Value("${threadPoolTaskExecutor.corePoolSize}")
+  private Integer corePoolSize;
+
+  @Value("${threadPoolTaskExecutor.maxPoolSize}")
+  private Integer maxPoolSize;
+
+  @Value("${threadPoolTaskExecutor.queueCapacity}")
+  private Integer queueCapacity;
+
+  @Value("${timeoutInSeconds}")
+  private Integer timeoutInSeconds;
+
+  @Value("${shippingAmount}")
+  private Float shippingAmount;
 
   @Autowired private ZonePropertiesWithValues zoneProperties;
 
@@ -39,6 +57,17 @@ public class BeanConfiguration {
   @Bean
   public RestTemplate restTesmplate() {
     return new RestTemplate();
+  }
+
+  @Bean
+  public Executor asyncExecutor() {
+    ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+    executor.setCorePoolSize(corePoolSize);
+    executor.setMaxPoolSize(maxPoolSize);
+    executor.setQueueCapacity(queueCapacity);
+    executor.setThreadNamePrefix("customer-orders-async-");
+    executor.initialize();
+    return executor;
   }
 
   @Bean
@@ -74,6 +103,8 @@ public class BeanConfiguration {
       CreateOrderRepositoryPort createOrderRepository,
       UpdateShippingByIdRepositoryPort updateShippingByIdRepository) {
     return new CreateOrderUseCase(
+        timeoutInSeconds,
+        shippingAmount,
         getCustomerService,
         getCustomerAddressService,
         getCustomerCardService,

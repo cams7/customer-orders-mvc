@@ -49,6 +49,9 @@ import br.com.cams7.orders.core.port.out.UpdateShippingByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.VerifyPaymentServicePort;
 import br.com.cams7.orders.core.port.out.exception.ResponseStatusException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -57,7 +60,6 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.scheduling.annotation.AsyncResult;
 
 @ExtendWith(MockitoExtension.class)
 public class CreateOrderUseCaseTests extends BaseTests {
@@ -75,6 +77,12 @@ public class CreateOrderUseCaseTests extends BaseTests {
 
   @Captor private ArgumentCaptor<OrderEntity> orderEntityCaptor;
 
+  @BeforeEach
+  public void before() throws IllegalAccessException {
+    FieldUtils.writeField(createOrderUseCase, "timeoutInSeconds", 1, true);
+    FieldUtils.writeField(createOrderUseCase, "shippingAmount", 10.5f, true);
+  }
+
   @Test
   @DisplayName("Should create order when pass valid URLs")
   void shouldCreateOrderWhenPassValidURLs() {
@@ -88,17 +96,17 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customer));
+        .willReturn(CompletableFuture.completedFuture(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerAddress));
+        .willReturn(CompletableFuture.completedFuture(customerAddress));
     given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerCard));
+        .willReturn(CompletableFuture.completedFuture(customerCard));
     given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(cartItems));
+        .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
-        .willReturn(new AsyncResult<>(payment));
+        .willReturn(CompletableFuture.completedFuture(payment));
     given(addShippingOrderService.add(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(order.getOrderId()));
+        .willReturn(CompletableFuture.completedFuture(order.getOrderId()));
     given(createOrderRepository.create(anyString(), any(OrderEntity.class))).willReturn(order);
     given(updateShippingByIdRepository.updateShipping(anyString(), anyString(), anyBoolean()))
         .willReturn(1l);
@@ -166,17 +174,17 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customer));
+        .willReturn(CompletableFuture.completedFuture(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerAddress));
+        .willReturn(CompletableFuture.completedFuture(customerAddress));
     given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerCard));
+        .willReturn(CompletableFuture.completedFuture(customerCard));
     given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(cartItems));
+        .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
-        .willReturn(new AsyncResult<>(payment));
+        .willReturn(CompletableFuture.completedFuture(payment));
     given(addShippingOrderService.add(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(""));
+        .willReturn(CompletableFuture.completedFuture(""));
     given(createOrderRepository.create(anyString(), any(OrderEntity.class))).willReturn(order);
     given(updateShippingByIdRepository.updateShipping(anyString(), anyString(), anyBoolean()))
         .willReturn(1l);
@@ -246,15 +254,15 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Payment payment = from(Payment.class).gimme(DECLINED_PAYMENT);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customer));
+        .willReturn(CompletableFuture.completedFuture(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerAddress));
+        .willReturn(CompletableFuture.completedFuture(customerAddress));
     given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerCard));
+        .willReturn(CompletableFuture.completedFuture(customerCard));
     given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(cartItems));
+        .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
-        .willReturn(new AsyncResult<>(payment));
+        .willReturn(CompletableFuture.completedFuture(payment));
 
     var exception =
         assertThrows(
@@ -305,13 +313,13 @@ public class CreateOrderUseCaseTests extends BaseTests {
     List<CartItem> cartItems = List.of();
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customer));
+        .willReturn(CompletableFuture.completedFuture(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerAddress));
+        .willReturn(CompletableFuture.completedFuture(customerAddress));
     given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerCard));
+        .willReturn(CompletableFuture.completedFuture(customerCard));
     given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(cartItems));
+        .willReturn(CompletableFuture.completedFuture(cartItems));
 
     var exception =
         assertThrows(
@@ -393,7 +401,7 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Customer customer = from(Customer.class).gimme(CUSTOMER);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customer));
+        .willReturn(CompletableFuture.completedFuture(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
         .willThrow(new RuntimeException(ERROR_MESSAGE));
 
@@ -436,9 +444,9 @@ public class CreateOrderUseCaseTests extends BaseTests {
     CustomerAddress customerAddress = from(CustomerAddress.class).gimme(CUSTOMER_ADDRESS);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customer));
+        .willReturn(CompletableFuture.completedFuture(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerAddress));
+        .willReturn(CompletableFuture.completedFuture(customerAddress));
     given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
         .willThrow(new RuntimeException(ERROR_MESSAGE));
 
@@ -483,11 +491,11 @@ public class CreateOrderUseCaseTests extends BaseTests {
     CustomerCard customerCard = from(CustomerCard.class).gimme(CUSTOMER_CARD);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customer));
+        .willReturn(CompletableFuture.completedFuture(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerAddress));
+        .willReturn(CompletableFuture.completedFuture(customerAddress));
     given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerCard));
+        .willReturn(CompletableFuture.completedFuture(customerCard));
     given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
         .willThrow(new RuntimeException(ERROR_MESSAGE));
 
@@ -539,13 +547,13 @@ public class CreateOrderUseCaseTests extends BaseTests {
             from(CartItem.class).gimme(CART_ITEM3));
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customer));
+        .willReturn(CompletableFuture.completedFuture(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerAddress));
+        .willReturn(CompletableFuture.completedFuture(customerAddress));
     given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerCard));
+        .willReturn(CompletableFuture.completedFuture(customerCard));
     given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(cartItems));
+        .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
         .willThrow(new RuntimeException(ERROR_MESSAGE));
 
@@ -600,15 +608,15 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customer));
+        .willReturn(CompletableFuture.completedFuture(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerAddress));
+        .willReturn(CompletableFuture.completedFuture(customerAddress));
     given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerCard));
+        .willReturn(CompletableFuture.completedFuture(customerCard));
     given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(cartItems));
+        .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
-        .willReturn(new AsyncResult<>(payment));
+        .willReturn(CompletableFuture.completedFuture(payment));
     given(createOrderRepository.create(anyString(), any(OrderEntity.class)))
         .willThrow(new RuntimeException(ERROR_MESSAGE));
 
@@ -676,15 +684,15 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customer));
+        .willReturn(CompletableFuture.completedFuture(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerAddress));
+        .willReturn(CompletableFuture.completedFuture(customerAddress));
     given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerCard));
+        .willReturn(CompletableFuture.completedFuture(customerCard));
     given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(cartItems));
+        .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
-        .willReturn(new AsyncResult<>(payment));
+        .willReturn(CompletableFuture.completedFuture(payment));
     given(createOrderRepository.create(anyString(), any(OrderEntity.class))).willReturn(order);
     given(addShippingOrderService.add(anyString(), anyString(), anyString()))
         .willThrow(new RuntimeException(ERROR_MESSAGE));
@@ -755,17 +763,17 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customer));
+        .willReturn(CompletableFuture.completedFuture(customer));
     given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerAddress));
+        .willReturn(CompletableFuture.completedFuture(customerAddress));
     given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(customerCard));
+        .willReturn(CompletableFuture.completedFuture(customerCard));
     given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(cartItems));
+        .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
-        .willReturn(new AsyncResult<>(payment));
+        .willReturn(CompletableFuture.completedFuture(payment));
     given(addShippingOrderService.add(anyString(), anyString(), anyString()))
-        .willReturn(new AsyncResult<>(order.getOrderId()));
+        .willReturn(CompletableFuture.completedFuture(order.getOrderId()));
     given(createOrderRepository.create(anyString(), any(OrderEntity.class))).willReturn(order);
     given(updateShippingByIdRepository.updateShipping(anyString(), anyString(), anyBoolean()))
         .willReturn(0l);

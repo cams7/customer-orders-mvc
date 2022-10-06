@@ -9,10 +9,10 @@ import br.com.cams7.orders.core.domain.CustomerCard;
 import br.com.cams7.orders.core.port.out.GetCustomerAddressServicePort;
 import br.com.cams7.orders.core.port.out.GetCustomerCardServicePort;
 import br.com.cams7.orders.core.port.out.GetCustomerServicePort;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -24,18 +24,21 @@ public class CustomerService extends BaseWebclient
   private final RestTemplate restTemplate;
   private final ModelMapper modelMapper;
 
+  @Async
   @Override
-  public Future<Customer> getCustomer(String country, String requestTraceId, String customerUrl) {
+  public CompletableFuture<Customer> getCustomer(
+      String country, String requestTraceId, String customerUrl) {
     var customer =
         getCustomer(
             restTemplate
                 .exchange(getRequest(customerUrl, country, requestTraceId), CustomerResponse.class)
                 .getBody());
-    return new AsyncResult<>(customer);
+    return CompletableFuture.completedFuture(customer);
   }
 
+  @Async
   @Override
-  public Future<CustomerAddress> getCustomerAddress(
+  public CompletableFuture<CustomerAddress> getCustomerAddress(
       String country, String requestTraceId, String addressUrl) {
     var customerAddress =
         getCustomerAddress(
@@ -43,18 +46,19 @@ public class CustomerService extends BaseWebclient
                 .exchange(
                     getRequest(addressUrl, country, requestTraceId), CustomerAddressResponse.class)
                 .getBody());
-    return new AsyncResult<>(customerAddress);
+    return CompletableFuture.completedFuture(customerAddress);
   }
 
+  @Async
   @Override
-  public Future<CustomerCard> getCustomerCard(
+  public CompletableFuture<CustomerCard> getCustomerCard(
       String country, String requestTraceId, String cardUrl) {
     var customerCard =
         getCustomerCard(
             restTemplate
                 .exchange(getRequest(cardUrl, country, requestTraceId), CustomerCardResponse.class)
                 .getBody());
-    return new AsyncResult<>(customerCard);
+    return CompletableFuture.completedFuture(customerCard);
   }
 
   private Customer getCustomer(CustomerResponse response) {

@@ -19,3 +19,12 @@ api:
       
 zone:
   ids: ${ZONE_IDS:DO:"America/Dominica",  BR:"America/Sao_Paulo", AR:"America/Buenos_Aires", EN:"America/New_York",   CO:"America/Bogota", EC:"America/Guayaquil", PE:"America/Lima", ZA:"Africa/Johannesburg", MX:"America/Mexico_City"}
+
+threadPoolTaskExecutor:
+  corePoolSize: ${CORE_POOL_SIZE:4}
+  maxPoolSize: ${MAX_POOL_SIZE:10}
+  queueCapacity: ${QUEUE_CAPACITY:50}
+
+timeoutInSeconds: ${TIMEOUT_IN_SECONDS:10}
+
+shippingAmount: ${SHIPPING_AMOUNT:10.5}

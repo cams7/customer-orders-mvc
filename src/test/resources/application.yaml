@@ -13,3 +13,12 @@ logging:
   
 zone:
   ids: DO:"America/Dominica", BR:"America/Sao_Paulo", AR:"America/Buenos_Aires", EN:"America/New_York", CO:"America/Bogota", EC:"America/Guayaquil", PE:"America/Lima", ZA:"Africa/Johannesburg", MX:"America/Mexico_City"
+
+threadPoolTaskExecutor:
+  corePoolSize: 2
+  maxPoolSize: 5
+  queueCapacity: 50
+
+timeoutInSeconds: 1
+
+shippingAmount: 10.5

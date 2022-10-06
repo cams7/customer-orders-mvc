@@ -4,12 +4,12 @@ import br.com.cams7.orders.adapter.webclient.response.CartItemResponse;
 import br.com.cams7.orders.core.domain.CartItem;
 import br.com.cams7.orders.core.port.out.GetCartItemsServicePort;
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,8 +20,9 @@ public class CartService extends BaseWebclient implements GetCartItemsServicePor
   private final RestTemplate restTemplate;
   private final ModelMapper modelMapper;
 
+  @Async
   @Override
-  public Future<List<CartItem>> getCartItems(
+  public CompletableFuture<List<CartItem>> getCartItems(
       String country, String requestTraceId, String itemsUrl) {
     var cartItems =
         restTemplate
@@ -32,7 +33,7 @@ public class CartService extends BaseWebclient implements GetCartItemsServicePor
             .stream()
             .map(this::getCartItem)
             .collect(Collectors.toList());
-    return new AsyncResult<>(cartItems);
+    return CompletableFuture.completedFuture(cartItems);
   }
 
   private CartItem getCartItem(CartItemResponse response) {

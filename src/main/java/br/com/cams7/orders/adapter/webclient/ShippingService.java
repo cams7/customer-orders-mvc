@@ -3,10 +3,10 @@ package br.com.cams7.orders.adapter.webclient;
 import br.com.cams7.orders.adapter.webclient.request.ShippingRequest;
 import br.com.cams7.orders.adapter.webclient.response.ShippingResponse;
 import br.com.cams7.orders.core.port.out.AddShippingOrderServicePort;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.AsyncResult;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,8 +19,9 @@ public class ShippingService extends BaseWebclient implements AddShippingOrderSe
   @Value("${api.shippingUrl}")
   private String shippingUrl;
 
+  @Async
   @Override
-  public Future<String> add(String country, String requestTraceId, String orderId) {
+  public CompletableFuture<String> add(String country, String requestTraceId, String orderId) {
     var shippingId =
         restTemplate
             .exchange(
@@ -28,6 +29,6 @@ public class ShippingService extends BaseWebclient implements AddShippingOrderSe
                 ShippingResponse.class)
             .getBody()
             .getId();
-    return new AsyncResult<>(shippingId);
+    return CompletableFuture.completedFuture(shippingId);
   }
 }

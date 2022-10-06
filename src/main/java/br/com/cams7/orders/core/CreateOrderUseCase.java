@@ -5,7 +5,6 @@ import static br.com.cams7.orders.core.port.out.exception.ResponseStatusExceptio
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.regex.Pattern.matches;
 
-import br.com.cams7.orders.core.domain.Customer;
 import br.com.cams7.orders.core.domain.OrderEntity;
 import br.com.cams7.orders.core.port.in.CreateOrderUseCasePort;
 import br.com.cams7.orders.core.port.in.params.CreateOrderCommand;
@@ -19,6 +18,7 @@ import br.com.cams7.orders.core.port.out.UpdateShippingByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.VerifyPaymentServicePort;
 import br.com.cams7.orders.core.port.out.exception.ResponseStatusException;
 import java.time.ZonedDateTime;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import lombok.AllArgsConstructor;
@@ -28,11 +28,10 @@ import org.apache.commons.collections4.CollectionUtils;
 @RequiredArgsConstructor
 public class CreateOrderUseCase implements CreateOrderUseCasePort {
 
-  private static final float SHIPPING = 10.5f;
   private static final String ID_REGEX = "^[\\w\\-]+$";
 
-  private static final long timeout = 1l;
-
+  private final Integer timeoutInSeconds;
+  private final Float shippingAmount;
   private final GetCustomerServicePort getCustomerService;
   private final GetCustomerAddressServicePort getCustomerAddressService;
   private final GetCustomerCardServicePort getCustomerCardService;
@@ -45,28 +44,29 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
   @Override
   public OrderEntity execute(String country, String requestTraceId, CreateOrderCommand command) {
     try {
-      Customer customer =
-          getCustomerService
-              .getCustomer(country, requestTraceId, command.getCustomerUrl())
-              .get(timeout, SECONDS);
-      var address =
-          getCustomerAddressService
-              .getCustomerAddress(country, requestTraceId, command.getAddressUrl())
-              .get(timeout, SECONDS);
-      var card =
-          getCustomerCardService
-              .getCustomerCard(country, requestTraceId, command.getCardUrl())
-              .get(timeout, SECONDS);
+      var customerFuture =
+          getCustomerService.getCustomer(country, requestTraceId, command.getCustomerUrl());
+      var addressFuture =
+          getCustomerAddressService.getCustomerAddress(
+              country, requestTraceId, command.getAddressUrl());
+      var cardFuture =
+          getCustomerCardService.getCustomerCard(country, requestTraceId, command.getCardUrl());
+
+      CompletableFuture.allOf(customerFuture, addressFuture, cardFuture).join();
+
+      var customer = customerFuture.get(timeoutInSeconds, SECONDS);
+      var address = addressFuture.get(timeoutInSeconds, SECONDS);
+      var card = cardFuture.get(timeoutInSeconds, SECONDS);
 
       var order = new OrderEntity();
       order.setCustomer(customer);
       order.setAddress(address);
       order.setCard(card);
 
-      var items =
-          getCartItemsService
-              .getCartItems(country, requestTraceId, command.getItemsUrl())
-              .get(timeout, SECONDS);
+      var itemsFuture =
+          getCartItemsService.getCartItems(country, requestTraceId, command.getItemsUrl());
+
+      var items = itemsFuture.get(timeoutInSeconds, SECONDS);
 
       order.setItems(items);
 
@@ -97,10 +97,9 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
       throws InterruptedException, ExecutionException, TimeoutException {
     var customerId = order.getCustomer().getCustomerId();
     var totalAmount = getTotalAmount(order);
-    var payment =
-        verifyPaymentService
-            .verify(country, requestTraceId, customerId, totalAmount)
-            .get(timeout, SECONDS);
+    var paymentFuture =
+        verifyPaymentService.verify(country, requestTraceId, customerId, totalAmount);
+    var payment = paymentFuture.get(timeoutInSeconds, SECONDS);
 
     return order.withTotalAmount(totalAmount).withPayment(payment);
   }
@@ -117,10 +116,8 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
   private ShippingAndOrder addShippingOrder(
       String country, String requestTraceId, OrderEntity order)
       throws InterruptedException, ExecutionException, TimeoutException {
-    var shippingId =
-        addShippingOrderService
-            .add(country, requestTraceId, order.getOrderId())
-            .get(timeout, SECONDS);
+    var shippingFuture = addShippingOrderService.add(country, requestTraceId, order.getOrderId());
+    var shippingId = shippingFuture.get(timeoutInSeconds, SECONDS);
     return new ShippingAndOrder(shippingId, order);
   }
 
@@ -139,12 +136,12 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
         INTERNAL_SERVER_ERROR_CODE);
   }
 
-  private static float getTotalAmount(OrderEntity order) {
+  private float getTotalAmount(OrderEntity order) {
     return (float)
         (order.getItems().stream()
                 .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
                 .sum()
-            + SHIPPING);
+            + shippingAmount);
   }
 
   @AllArgsConstructor
