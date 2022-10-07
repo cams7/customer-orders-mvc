@@ -29,6 +29,11 @@
       "id": "b2322673-3bfa-4549-96ac-55fe7dd1a02d",
       "fullName": "Luzia Lara Mendes",
       "username": "luzia"
+    },
+    {
+      "id": "ea5a387f-3535-4153-bd36-2e944ccdd459",
+      "fullName": "Sebastián Longoria",
+      "username": "sebastian"
     }
   ],
   "addresses": [
@@ -91,6 +96,16 @@
       "federativeUnit": "AM",
       "country": "BR",
       "customerId": "b2322673-3bfa-4549-96ac-55fe7dd1a02d"
+    },
+    {
+      "id": "4ed6fbca-9c27-4bd8-a998-ef190e88a8c8",
+      "number": "455",
+      "street": "Av Italia",
+      "postcode": "H3500ALD",
+      "city": "Resistencia",
+      "federativeUnit": "Chaco",
+      "country": "AR",
+      "customerId": "ea5a387f-3535-4153-bd36-2e944ccdd459"
     }
   ],
   "cards": [
@@ -135,6 +150,13 @@
       "expires": "07/12/2023",
       "ccv": "967",
       "customerId": "b2322673-3bfa-4549-96ac-55fe7dd1a02d"
+    },
+    {
+      "id": "b4086cf9-f8c7-4d32-a48d-f898424301c8",
+      "longNum": "6011789971225778",
+      "expires": "2027/8",
+      "ccv": "988",
+      "customerId": "ea5a387f-3535-4153-bd36-2e944ccdd459"
     }
   ]
 }

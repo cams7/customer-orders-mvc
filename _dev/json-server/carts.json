@@ -23,6 +23,10 @@
     {
       "id": "fdda1a8a-f374-4346-a112-561c6e93ccb4",
       "customerId": "b2322673-3bfa-4549-96ac-55fe7dd1a02d"
+    },
+    {
+      "id": "2ca11a65-2c4b-4671-b98a-724d31f457aa",
+      "customerId": "ea5a387f-3535-4153-bd36-2e944ccdd459"
     }
   ],
   "items": [
@@ -151,6 +155,41 @@
       "quantity": 2,
       "unitPrice": 12.7,
       "cartId": "fdda1a8a-f374-4346-a112-561c6e93ccb4"
+    },
+    {
+      "id": "f3a622e3-82d1-4c3a-8ede-738ebdc3eb49",
+      "productId": "1b22252e-4291-4501-8908-c5796f1b1d45",
+      "quantity": 1,
+      "unitPrice": 17.7,
+      "cartId": "2ca11a65-2c4b-4671-b98a-724d31f457aa"
+    },
+    {
+      "id": "b7745417-108c-4151-913d-39af71b23bc1",
+      "productId": "d197efe1-4d0b-40d2-add1-a3a9803e3cee",
+      "quantity": 1,
+      "unitPrice": 14.7,
+      "cartId": "2ca11a65-2c4b-4671-b98a-724d31f457aa"
+    },
+    {
+      "id": "9cbc397c-9402-4dd8-af98-365fae9b3e49",
+      "productId": "170c85c8-e4d3-4c55-8c80-9aa7b46d2eb1",
+      "quantity": 4,
+      "unitPrice": 3.7,
+      "cartId": "2ca11a65-2c4b-4671-b98a-724d31f457aa"
+    },
+    {
+      "id": "ef9ed32a-b20b-477f-8c3b-1911201aadc4",
+      "productId": "2dfd5320-6555-4a90-acf3-dd3fe2617040",
+      "quantity": 2,
+      "unitPrice": 6.7,
+      "cartId": "2ca11a65-2c4b-4671-b98a-724d31f457aa"
+    },
+    {
+      "id": "0f39cec2-5939-477b-8720-926e7b795ee5",
+      "productId": "66bd0146-ddcf-4b85-8e23-5b181d32ee6c",
+      "quantity": 3,
+      "unitPrice": 8.7,
+      "cartId": "2ca11a65-2c4b-4671-b98a-724d31f457aa"
     }
   ]
 }
