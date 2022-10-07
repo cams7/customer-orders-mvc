@@ -19,6 +19,16 @@
       "id": "20d54ed5-c94d-48f7-a912-bd85df84a6b9",
       "fullName": "Santino Colunga",
       "username": "santino"
+    },
+    {
+      "id": "118e7d8a-d3fd-493a-a759-caeadf8c775e",
+      "fullName": "Martin Raul Erick da Rocha",
+      "username": "martin"
+    },
+    {
+      "id": "b2322673-3bfa-4549-96ac-55fe7dd1a02d",
+      "fullName": "Luzia Lara Mendes",
+      "username": "luzia"
     }
   ],
   "addresses": [
@@ -61,6 +71,26 @@
       "federativeUnit": "Catamarca",
       "country": "AR",
       "customerId": "20d54ed5-c94d-48f7-a912-bd85df84a6b9"
+    },
+    {
+      "id": "a8456b71-f779-4e8b-b291-7fa5b3617ede",
+      "number": "404",
+      "street": "Rua Orlando Ferreira",
+      "postcode": "88371530",
+      "city": "Navegantes",
+      "federativeUnit": "SC",
+      "country": "BR",
+      "customerId": "118e7d8a-d3fd-493a-a759-caeadf8c775e"
+    },
+    {
+      "id": "0eae20ce-dc86-48f2-b616-8495c38b2386",
+      "number": "124",
+      "street": "Rua de 15 Novembro 568",
+      "postcode": "69450970",
+      "city": "Codajás",
+      "federativeUnit": "AM",
+      "country": "BR",
+      "customerId": "b2322673-3bfa-4549-96ac-55fe7dd1a02d"
     }
   ],
   "cards": [
@@ -91,6 +121,20 @@
       "expires": "2028/11",
       "ccv": "275",
       "customerId": "20d54ed5-c94d-48f7-a912-bd85df84a6b9"
+    },
+    {
+      "id": "c0632d7c-9e8d-423d-978a-3302fd93decf",
+      "longNum": "5347 2431 4672 0427",
+      "expires": "07/03/2023",
+      "ccv": "292",
+      "customerId": "118e7d8a-d3fd-493a-a759-caeadf8c775e"
+    },
+    {
+      "id": "e76032b1-09ea-4974-9f83-92a6ee216972",
+      "longNum": "5598 9623 1832 6244",
+      "expires": "07/12/2023",
+      "ccv": "967",
+      "customerId": "b2322673-3bfa-4549-96ac-55fe7dd1a02d"
     }
   ]
 }
