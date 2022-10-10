@@ -1,27 +1,27 @@
 country = "BR"
 
-customerUrl = "http://localhost:3000"
-cartUrl = "http://localhost:3001"
+customerUrl = "http://localhost:8084"
+cartUrl = "http://localhost:8085"
 
 customerIds = {
-   "7329d57a-4028-41cc-9626-a0c41246a623",
-   "118e7d8a-d3fd-493a-a759-caeadf8c775e",
-   "b2322673-3bfa-4549-96ac-55fe7dd1a02d"
+   "57a98d98e4b00679b4a830b5",
+   "5a934e000102030405000004",
+   "5a934e000102030405000007"
 }
 addressIds = {
-   "594fbca6-270c-4299-8b2c-084da56c756c",
-   "a8456b71-f779-4e8b-b291-7fa5b3617ede",
-   "0eae20ce-dc86-48f2-b616-8495c38b2386"
+   "57a98d98e4b00679b4a830b3",
+   "5a934e000102030405000005",
+   "5a934e000102030405000008"
 }
 cardIds = {
-   "cfecdbd8-6dd1-45ae-a453-1adc20a6b065",
-   "c0632d7c-9e8d-423d-978a-3302fd93decf",
-   "e76032b1-09ea-4974-9f83-92a6ee216972"
+   "57a98d98e4b00679b4a830b4",
+   "5a934e000102030405000006",
+   "5a934e000102030405000009"
 }
 cartIds = {
-   "ca36c27b-d9f9-457a-be0b-2aab214cda65",
-   "214b5385-2452-4f53-b6ee-f0fa318deaa2",
-   "fdda1a8a-f374-4346-a112-561c6e93ccb4"
+   "5a934e000102030405000031",
+   "5a934e000102030405000037",
+   "5a934e000102030405000043"
 }
 
 math.randomseed(os.clock()*100000000000)
