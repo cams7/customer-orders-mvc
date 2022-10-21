@@ -47,8 +47,11 @@ public class PaymentService extends BaseWebclient implements VerifyPaymentServic
   }
 
   private Optional<Payment> getPayment(final PaymentResponse response) {
-    if (response == null) return Optional.empty();
-    final var payment = modelMapper.map(response, Payment.class);
-    return Optional.of(payment);
+    return Optional.ofNullable(response)
+        .map(
+            payment -> {
+              final var entity = modelMapper.map(payment, Payment.class);
+              return entity;
+            });
   }
 }

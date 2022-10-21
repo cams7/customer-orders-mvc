@@ -111,28 +111,31 @@ public class CustomerService extends BaseWebclient
   }
 
   private Optional<Customer> getCustomer(final CustomerResponse response) {
-    if (response == null) return Optional.empty();
-    final var customer = modelMapper.map(response, Customer.class);
-    customer.setCustomerId(response.getId());
-    return Optional.of(customer);
+    return Optional.ofNullable(response)
+        .map(
+            customer -> {
+              final var entity = modelMapper.map(customer, Customer.class);
+              entity.setCustomerId(customer.getId());
+              return entity;
+            });
   }
 
   private Optional<CustomerAddress> getCustomerAddress(
       final Optional<CustomerAddressResponse> response) {
     return response.map(
-        address -> {
-          final var customerAddress = modelMapper.map(address, CustomerAddress.class);
-          customerAddress.setAddressId(address.getId());
-          return customerAddress;
+        customerAddress -> {
+          final var entity = modelMapper.map(customerAddress, CustomerAddress.class);
+          entity.setAddressId(customerAddress.getId());
+          return entity;
         });
   }
 
   private Optional<CustomerCard> getCustomerCard(final Optional<CustomerCardResponse> response) {
     return response.map(
-        card -> {
-          final var customerCard = modelMapper.map(card, CustomerCard.class);
-          customerCard.setCardId(card.getId());
-          return customerCard;
+        customerCard -> {
+          final var entity = modelMapper.map(customerCard, CustomerCard.class);
+          entity.setCardId(customerCard.getId());
+          return entity;
         });
   }
 }

@@ -41,8 +41,11 @@ public class ShippingService extends BaseWebclient implements AddShippingOrderSe
   }
 
   private Optional<String> getShippingId(final ShippingResponse response) {
-    if (response == null) return Optional.empty();
-    final var shippingId = response.getId();
-    return Optional.of(shippingId);
+    return Optional.ofNullable(response)
+        .map(
+            shipping -> {
+              final var shippingId = shipping.getId();
+              return shippingId;
+            });
   }
 }

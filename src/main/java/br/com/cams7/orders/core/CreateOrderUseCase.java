@@ -7,8 +7,6 @@ import static java.util.regex.Pattern.matches;
 
 import br.com.cams7.orders.core.domain.CartItem;
 import br.com.cams7.orders.core.domain.Customer;
-import br.com.cams7.orders.core.domain.CustomerAddress;
-import br.com.cams7.orders.core.domain.CustomerCard;
 import br.com.cams7.orders.core.domain.OrderEntity;
 import br.com.cams7.orders.core.port.in.CreateOrderUseCasePort;
 import br.com.cams7.orders.core.port.in.params.CreateOrderCommand;
@@ -61,20 +59,20 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
                     command.getAddressPostcode(),
                     command.getCardNumber(),
                     command.getCartId()))
-        .map(order -> verifyPayment(country, requestTraceId, order))
-        .map(order -> createOrder(country, order))
-        .map(order -> addShippingOrder(country, requestTraceId, order))
-        .map(
+        .flatMap(order -> verifyPayment(country, requestTraceId, order))
+        .flatMap(order -> createOrder(country, order))
+        .flatMap(order -> addShippingOrder(country, requestTraceId, order))
+        .flatMap(
             shippingAndOrder ->
                 updateShipping(country, shippingAndOrder.shippingId, shippingAndOrder.order));
   }
 
   private Optional<Customer> getCustomer(
       final String country, final String requestTraceId, final String customerId) {
+    final var customerFuture = getCustomerService.getCustomer(country, requestTraceId, customerId);
     try {
-      return getCustomerService
-          .getCustomer(country, requestTraceId, customerId)
-          .get(timeoutInSeconds, SECONDS);
+      final var customer = customerFuture.get(timeoutInSeconds, SECONDS);
+      return customer;
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
       throw new ResponseStatusException(e.getMessage(), INTERNAL_SERVER_ERROR_CODE);
     }
@@ -106,9 +104,8 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
     CompletableFuture.allOf(addressFuture, cardFuture, itemsFuture).join();
 
     try {
-      final var address =
-          addressFuture.get(timeoutInSeconds, SECONDS).orElse(getAddress(addressPostcode));
-      final var card = cardFuture.get(timeoutInSeconds, SECONDS).orElse(getCard(cardNumber));
+      final var address = addressFuture.get(timeoutInSeconds, SECONDS).orElse(null);
+      final var card = cardFuture.get(timeoutInSeconds, SECONDS).orElse(null);
       final var items =
           itemsFuture.get(timeoutInSeconds, SECONDS).parallelStream()
               .sorted(CreateOrderUseCase::compare)
@@ -123,19 +120,7 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
     }
   }
 
-  private static CustomerAddress getAddress(String postcode) {
-    final var address = new CustomerAddress();
-    address.setPostcode(postcode);
-    return address;
-  }
-
-  private static CustomerCard getCard(String longNum) {
-    final var card = new CustomerCard();
-    card.setLongNum(longNum);
-    return card;
-  }
-
-  private OrderEntity verifyPayment(
+  private Optional<OrderEntity> verifyPayment(
       final String country, final String requestTraceId, final OrderEntity order) {
     final var customerId = order.getCustomer().getCustomerId();
     final var totalAmount = getTotalAmount(order);
@@ -151,28 +136,18 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
                 if (!payment.isAuthorised())
                   throw new ResponseStatusException(payment.getMessage(), BAD_REQUEST_CODE);
                 return order.withTotalAmount(totalAmount).withPayment(payment);
-              })
-          .orElseThrow(
-              () ->
-                  new ResponseStatusException(
-                      "An error happened while getting payment status",
-                      INTERNAL_SERVER_ERROR_CODE));
+              });
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
       throw new ResponseStatusException(e.getMessage(), INTERNAL_SERVER_ERROR_CODE);
     }
   }
 
-  private OrderEntity createOrder(final String country, final OrderEntity order) {
+  private Optional<OrderEntity> createOrder(final String country, final OrderEntity order) {
     order.setRegistrationDate(ZonedDateTime.now());
-    return createOrderRepository
-        .create(country, order)
-        .orElseThrow(
-            () ->
-                new ResponseStatusException(
-                    "An error happened while creating order", INTERNAL_SERVER_ERROR_CODE));
+    return createOrderRepository.create(country, order);
   }
 
-  private ShippingAndOrder addShippingOrder(
+  private Optional<ShippingAndOrder> addShippingOrder(
       final String country, final String requestTraceId, final OrderEntity order) {
     final var orderId = order.getOrderId();
     final var shippingFuture = addShippingOrderService.add(country, requestTraceId, orderId);
@@ -180,17 +155,13 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
     try {
       return shippingFuture
           .get(timeoutInSeconds, SECONDS)
-          .map(shippingId -> new ShippingAndOrder(shippingId, order))
-          .orElseThrow(
-              () ->
-                  new ResponseStatusException(
-                      "An error happened while adding shipping", INTERNAL_SERVER_ERROR_CODE));
+          .map(shippingId -> new ShippingAndOrder(shippingId, order));
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
       throw new ResponseStatusException(e.getMessage(), INTERNAL_SERVER_ERROR_CODE);
     }
   }
 
-  private OrderEntity updateShipping(
+  private Optional<OrderEntity> updateShipping(
       final String country, final String shippingId, final OrderEntity order) {
     final var orderId = order.getOrderId();
     final var isRegisteredShipping = shippingId != null && matches(ID_REGEX, shippingId);
@@ -205,12 +176,7 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
                     INTERNAL_SERVER_ERROR_CODE);
 
               return order.withRegisteredShipping(isRegisteredShipping);
-            })
-        .orElseThrow(
-            () ->
-                new ResponseStatusException(
-                    "An error happened while updating shipping status",
-                    INTERNAL_SERVER_ERROR_CODE));
+            });
   }
 
   private float getTotalAmount(OrderEntity order) {
