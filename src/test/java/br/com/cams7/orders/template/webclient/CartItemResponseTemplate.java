@@ -22,9 +22,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PRIVATE)
 public final class CartItemResponseTemplate {
 
-  public static final String CART_ITEM1_ID = "06e54a69-1179-4fa2-9997-8a883d9e30e8";
-  public static final String CART_ITEM2_ID = "ad5a7ad8-112a-4af2-83a1-c4596d3eb581";
-  public static final String CART_ITEM3_ID = "9231f141-47cb-475f-9df9-b0f5e8d32c7e";
+  public static final String CART_ITEM1_ID = "5a934e000102030405000025";
+  public static final String CART_ITEM2_ID = "5a934e000102030405000026";
+  public static final String CART_ITEM3_ID = "5a934e000102030405000027";
 
   public static void loadTemplates() {
     of(CartItemResponse.class)

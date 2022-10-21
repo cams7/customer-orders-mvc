@@ -94,8 +94,8 @@ public class OrderController {
   @ResponseStatus(OK)
   @GetMapping
   List<OrderResponse> getOrders(
-      @RequestHeader(COUNTRY_HEADER) String country,
-      @RequestHeader(REQUEST_TRACE_ID_HEADER) String requestTraceId) {
+      @RequestHeader(COUNTRY_HEADER) final String country,
+      @RequestHeader(REQUEST_TRACE_ID_HEADER) final String requestTraceId) {
     return getOrdersByCountryUseCase.execute(country).stream()
         .map(this::getOrder)
         .collect(Collectors.toList());
@@ -130,16 +130,16 @@ public class OrderController {
   @ResponseStatus(OK)
   @GetMapping("/{orderId}")
   OrderResponse getOrder(
-      @RequestHeader(COUNTRY_HEADER) String country,
-      @RequestHeader(REQUEST_TRACE_ID_HEADER) String requestTraceId,
+      @RequestHeader(COUNTRY_HEADER) final String country,
+      @RequestHeader(REQUEST_TRACE_ID_HEADER) final String requestTraceId,
       @Parameter(
               name = "orderId",
               required = true,
               description = "Order id",
               example = "57a98d98e4b00679b4a830af")
           @PathVariable
-          String orderId) {
-    return getOrder(getOrderByIdUseCase.execute(country, orderId));
+          final String orderId) {
+    return getOrderByIdUseCase.execute(country, orderId).map(this::getOrder).orElse(null);
   }
 
   @Operation(description = "Delete order")
@@ -171,15 +171,15 @@ public class OrderController {
   @ResponseStatus(OK)
   @DeleteMapping("/{orderId}")
   void deleteOrder(
-      @RequestHeader(COUNTRY_HEADER) String country,
-      @RequestHeader(REQUEST_TRACE_ID_HEADER) String requestTraceId,
+      @RequestHeader(COUNTRY_HEADER) final String country,
+      @RequestHeader(REQUEST_TRACE_ID_HEADER) final String requestTraceId,
       @Parameter(
               name = "orderId",
               required = true,
               description = "Order id",
               example = "57a98d98e4b00679b4a830af")
           @PathVariable
-          String orderId) {
+          final String orderId) {
     deleteOrderByIdUseCase.execute(country, orderId);
   }
 
@@ -216,24 +216,26 @@ public class OrderController {
   @PostMapping(consumes = APPLICATION_JSON_VALUE)
   @ResponseStatus(CREATED)
   OrderResponse createOrder(
-      @RequestHeader(COUNTRY_HEADER) String country,
-      @RequestHeader(REQUEST_TRACE_ID_HEADER) String requestTraceId,
-      @RequestBody CreateOrderRequest request) {
-    return getOrder(createOrderUseCase.execute(country, requestTraceId, getCreateOrder(request)));
+      @RequestHeader(COUNTRY_HEADER) final String country,
+      @RequestHeader(REQUEST_TRACE_ID_HEADER) final String requestTraceId,
+      @RequestBody final CreateOrderRequest request) {
+    return createOrderUseCase
+        .execute(country, requestTraceId, getCreateOrder(request))
+        .map(this::getOrder)
+        .orElse(null);
   }
 
-  private OrderResponse getOrder(OrderEntity entity) {
-    if (entity == null) return null;
-    var response = modelMapper.map(entity, OrderResponse.class);
+  private OrderResponse getOrder(final OrderEntity entity) {
+    final var response = modelMapper.map(entity, OrderResponse.class);
     response.setRegistrationDate(getFormattedDateTime(entity.getRegistrationDate()));
     return response;
   }
 
-  private CreateOrderCommand getCreateOrder(CreateOrderRequest request) {
+  private CreateOrderCommand getCreateOrder(final CreateOrderRequest request) {
     return new CreateOrderCommand(
-        request.getCustomerUrl(),
-        request.getAddressUrl(),
-        request.getCardUrl(),
-        request.getItemsUrl());
+        request.getCustomerId(),
+        request.getAddressPostcode(),
+        request.getCardNumber(),
+        request.getCartId());
   }
 }

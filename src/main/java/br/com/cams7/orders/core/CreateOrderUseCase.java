@@ -5,6 +5,10 @@ import static br.com.cams7.orders.core.port.out.exception.ResponseStatusExceptio
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.regex.Pattern.matches;
 
+import br.com.cams7.orders.core.domain.CartItem;
+import br.com.cams7.orders.core.domain.Customer;
+import br.com.cams7.orders.core.domain.CustomerAddress;
+import br.com.cams7.orders.core.domain.CustomerCard;
 import br.com.cams7.orders.core.domain.OrderEntity;
 import br.com.cams7.orders.core.port.in.CreateOrderUseCasePort;
 import br.com.cams7.orders.core.port.in.params.CreateOrderCommand;
@@ -18,9 +22,11 @@ import br.com.cams7.orders.core.port.out.UpdateShippingByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.VerifyPaymentServicePort;
 import br.com.cams7.orders.core.port.out.exception.ResponseStatusException;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
@@ -42,98 +48,169 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
   private final UpdateShippingByIdRepositoryPort updateShippingByIdRepository;
 
   @Override
-  public OrderEntity execute(String country, String requestTraceId, CreateOrderCommand command) {
+  public Optional<OrderEntity> execute(
+      final String country, final String requestTraceId, final CreateOrderCommand command) {
+    return getCustomer(country, requestTraceId, command.getCustomerId())
+        .map(CreateOrderUseCase::getOrderWithCustomer)
+        .map(
+            order ->
+                getOrderWithAddressAndCardAndSortedItems(
+                    order,
+                    country,
+                    requestTraceId,
+                    command.getAddressPostcode(),
+                    command.getCardNumber(),
+                    command.getCartId()))
+        .map(order -> verifyPayment(country, requestTraceId, order))
+        .map(order -> createOrder(country, order))
+        .map(order -> addShippingOrder(country, requestTraceId, order))
+        .map(
+            shippingAndOrder ->
+                updateShipping(country, shippingAndOrder.shippingId, shippingAndOrder.order));
+  }
+
+  private Optional<Customer> getCustomer(
+      final String country, final String requestTraceId, final String customerId) {
     try {
-      var customerFuture =
-          getCustomerService.getCustomer(country, requestTraceId, command.getCustomerUrl());
-      var addressFuture =
-          getCustomerAddressService.getCustomerAddress(
-              country, requestTraceId, command.getAddressUrl());
-      var cardFuture =
-          getCustomerCardService.getCustomerCard(country, requestTraceId, command.getCardUrl());
-
-      CompletableFuture.allOf(customerFuture, addressFuture, cardFuture).join();
-
-      var customer = customerFuture.get(timeoutInSeconds, SECONDS);
-      var address = addressFuture.get(timeoutInSeconds, SECONDS);
-      var card = cardFuture.get(timeoutInSeconds, SECONDS);
-
-      var order = new OrderEntity();
-      order.setCustomer(customer);
-      order.setAddress(address);
-      order.setCard(card);
-
-      var itemsFuture =
-          getCartItemsService.getCartItems(country, requestTraceId, command.getItemsUrl());
-
-      var items = itemsFuture.get(timeoutInSeconds, SECONDS);
-
-      order.setItems(items);
-
-      order = verifyCartItems(order);
-
-      order = verifyPayment(country, requestTraceId, order);
-
-      order = createOrder(country, order);
-
-      var shippingAndOrder = addShippingOrder(country, requestTraceId, order);
-
-      order = updateShipping(country, shippingAndOrder.shippingId, shippingAndOrder.order);
-
-      return order;
+      return getCustomerService
+          .getCustomer(country, requestTraceId, customerId)
+          .get(timeoutInSeconds, SECONDS);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
       throw new ResponseStatusException(e.getMessage(), INTERNAL_SERVER_ERROR_CODE);
     }
   }
 
-  private OrderEntity verifyCartItems(OrderEntity order) {
-    if (CollectionUtils.isEmpty(order.getItems())) {
-      throw new ResponseStatusException("There aren't items in the cart", BAD_REQUEST_CODE);
-    }
-    return order;
+  private static OrderEntity getOrderWithCustomer(final Customer customer) {
+    customer.setFullName(String.format("%s %s", customer.getFirstName(), customer.getLastName()));
+    return new OrderEntity().withCustomer(customer);
   }
 
-  private OrderEntity verifyPayment(String country, String requestTraceId, OrderEntity order)
-      throws InterruptedException, ExecutionException, TimeoutException {
-    var customerId = order.getCustomer().getCustomerId();
-    var totalAmount = getTotalAmount(order);
-    var paymentFuture =
+  private OrderEntity getOrderWithAddressAndCardAndSortedItems(
+      final OrderEntity order,
+      final String country,
+      final String requestTraceId,
+      final String addressPostcode,
+      final String cardNumber,
+      final String cartId) {
+    final var customerId = order.getCustomer().getCustomerId();
+
+    final var addressFuture =
+        getCustomerAddressService.getCustomerAddress(
+            country, requestTraceId, customerId, addressPostcode);
+    final var cardFuture =
+        getCustomerCardService.getCustomerCard(country, requestTraceId, customerId, cardNumber);
+
+    final var itemsFuture =
+        getCartItemsService.getCartItems(country, requestTraceId, customerId, cartId);
+
+    CompletableFuture.allOf(addressFuture, cardFuture, itemsFuture).join();
+
+    try {
+      final var address =
+          addressFuture.get(timeoutInSeconds, SECONDS).orElse(getAddress(addressPostcode));
+      final var card = cardFuture.get(timeoutInSeconds, SECONDS).orElse(getCard(cardNumber));
+      final var items =
+          itemsFuture.get(timeoutInSeconds, SECONDS).parallelStream()
+              .sorted(CreateOrderUseCase::compare)
+              .collect(Collectors.toList());
+
+      if (CollectionUtils.isEmpty(items))
+        throw new ResponseStatusException("There aren't items in the cart", BAD_REQUEST_CODE);
+
+      return order.withAddress(address).withCard(card).withItems(items);
+    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+      throw new ResponseStatusException(e.getMessage(), INTERNAL_SERVER_ERROR_CODE);
+    }
+  }
+
+  private static CustomerAddress getAddress(String postcode) {
+    final var address = new CustomerAddress();
+    address.setPostcode(postcode);
+    return address;
+  }
+
+  private static CustomerCard getCard(String longNum) {
+    final var card = new CustomerCard();
+    card.setLongNum(longNum);
+    return card;
+  }
+
+  private OrderEntity verifyPayment(
+      final String country, final String requestTraceId, final OrderEntity order) {
+    final var customerId = order.getCustomer().getCustomerId();
+    final var totalAmount = getTotalAmount(order);
+
+    final var paymentFuture =
         verifyPaymentService.verify(country, requestTraceId, customerId, totalAmount);
-    var payment = paymentFuture.get(timeoutInSeconds, SECONDS);
 
-    return order.withTotalAmount(totalAmount).withPayment(payment);
+    try {
+      return paymentFuture
+          .get(timeoutInSeconds, SECONDS)
+          .map(
+              payment -> {
+                if (!payment.isAuthorised())
+                  throw new ResponseStatusException(payment.getMessage(), BAD_REQUEST_CODE);
+                return order.withTotalAmount(totalAmount).withPayment(payment);
+              })
+          .orElseThrow(
+              () ->
+                  new ResponseStatusException(
+                      "An error happened while getting payment status",
+                      INTERNAL_SERVER_ERROR_CODE));
+    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+      throw new ResponseStatusException(e.getMessage(), INTERNAL_SERVER_ERROR_CODE);
+    }
   }
 
-  private OrderEntity createOrder(String country, OrderEntity order) {
-    var payment = order.getPayment();
-    if (!payment.isAuthorised()) {
-      throw new ResponseStatusException(payment.getMessage(), BAD_REQUEST_CODE);
-    }
+  private OrderEntity createOrder(final String country, final OrderEntity order) {
     order.setRegistrationDate(ZonedDateTime.now());
-    return createOrderRepository.create(country, order);
+    return createOrderRepository
+        .create(country, order)
+        .orElseThrow(
+            () ->
+                new ResponseStatusException(
+                    "An error happened while creating order", INTERNAL_SERVER_ERROR_CODE));
   }
 
   private ShippingAndOrder addShippingOrder(
-      String country, String requestTraceId, OrderEntity order)
-      throws InterruptedException, ExecutionException, TimeoutException {
-    var shippingFuture = addShippingOrderService.add(country, requestTraceId, order.getOrderId());
-    var shippingId = shippingFuture.get(timeoutInSeconds, SECONDS);
-    return new ShippingAndOrder(shippingId, order);
+      final String country, final String requestTraceId, final OrderEntity order) {
+    final var orderId = order.getOrderId();
+    final var shippingFuture = addShippingOrderService.add(country, requestTraceId, orderId);
+
+    try {
+      return shippingFuture
+          .get(timeoutInSeconds, SECONDS)
+          .map(shippingId -> new ShippingAndOrder(shippingId, order))
+          .orElseThrow(
+              () ->
+                  new ResponseStatusException(
+                      "An error happened while adding shipping", INTERNAL_SERVER_ERROR_CODE));
+    } catch (InterruptedException | ExecutionException | TimeoutException e) {
+      throw new ResponseStatusException(e.getMessage(), INTERNAL_SERVER_ERROR_CODE);
+    }
   }
 
-  private OrderEntity updateShipping(String country, String shippingId, OrderEntity order) {
-    var orderId = order.getOrderId();
-    var isRegisteredShipping = shippingId != null && matches(ID_REGEX, shippingId);
-    var modifiedCount =
-        updateShippingByIdRepository.updateShipping(country, orderId, isRegisteredShipping);
+  private OrderEntity updateShipping(
+      final String country, final String shippingId, final OrderEntity order) {
+    final var orderId = order.getOrderId();
+    final var isRegisteredShipping = shippingId != null && matches(ID_REGEX, shippingId);
+    return updateShippingByIdRepository
+        .updateShipping(country, orderId, isRegisteredShipping)
+        .map(
+            modifiedCount -> {
+              if (modifiedCount == null || modifiedCount <= 0)
+                throw new ResponseStatusException(
+                    String.format(
+                        "The registeredShipping field of order %s hasn't been changed", orderId),
+                    INTERNAL_SERVER_ERROR_CODE);
 
-    if (modifiedCount != null && modifiedCount > 0) {
-      return order.withRegisteredShipping(isRegisteredShipping);
-    }
-
-    throw new ResponseStatusException(
-        String.format("The registeredShipping field of order %s hasn't been changed", orderId),
-        INTERNAL_SERVER_ERROR_CODE);
+              return order.withRegisteredShipping(isRegisteredShipping);
+            })
+        .orElseThrow(
+            () ->
+                new ResponseStatusException(
+                    "An error happened while updating shipping status",
+                    INTERNAL_SERVER_ERROR_CODE));
   }
 
   private float getTotalAmount(OrderEntity order) {
@@ -142,6 +219,17 @@ public class CreateOrderUseCase implements CreateOrderUseCasePort {
                 .mapToDouble(item -> item.getQuantity() * item.getUnitPrice())
                 .sum()
             + shippingAmount);
+  }
+
+  private static int compare(CartItem item1, CartItem item2) {
+    return compare(
+        item2.getQuantity() * item2.getUnitPrice(), item1.getQuantity() * item1.getUnitPrice());
+  }
+
+  private static int compare(float value1, float value2) {
+    if (value1 > value2) return 1;
+    if (value1 < value2) return -1;
+    return 0;
   }
 
   @AllArgsConstructor

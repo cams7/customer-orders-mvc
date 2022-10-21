@@ -37,6 +37,8 @@ public final class OrderEntityTemplate {
   public static final float DECLINED_TOTAL_AMOUNT = 161.5f;
   public static final float AUTHORISED_TOTAL_AMOUNT = 91.5f;
 
+  public static final boolean REGISTERED_SHIPPING = true;
+
   public static void loadTemplates() {
     of(OrderEntity.class)
         .addTemplate(
@@ -75,7 +77,7 @@ public final class OrderEntityTemplate {
                         (CartItem) from(CartItem.class).gimme(CART_ITEM3)));
                 add("totalAmount", AUTHORISED_TOTAL_AMOUNT);
                 add("payment", (Payment) from(Payment.class).gimme(AUTHORISED_PAYMENT));
-                add("registeredShipping", true);
+                add("registeredShipping", REGISTERED_SHIPPING);
               }
             });
   }

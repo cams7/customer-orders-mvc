@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PRIVATE)
 public final class CustomerCardResponseTemplate {
 
-  public static final String CUSTOMER_CARD_EXPIRES = "22/04/2023";
+  public static final String CUSTOMER_CARD_EXPIRES = "04/2023";
   public static final String CUSTOMER_CARD_CCV = "320";
 
   public static void loadTemplates() {

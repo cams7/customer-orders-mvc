@@ -1,6 +1,7 @@
 package br.com.cams7.orders.template.webclient;
 
 import static br.com.cams7.orders.template.DomainTemplateLoader.SHIPPING_RESPONSE;
+import static br.com.cams7.orders.template.domain.CustomerAddressTemplate.CUSTOMER_ADDRESS_COUNTRY;
 import static br.com.cams7.orders.template.domain.OrderEntityTemplate.ORDER_ID;
 import static br.com.six2six.fixturefactory.Fixture.of;
 import static lombok.AccessLevel.PRIVATE;
@@ -12,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PRIVATE)
 public final class ShippingResponseTemplate {
 
-  public static final String SHIPPING_ID = "6315da6f-5ab3-4262-968c-489ee541693f";
+  public static final String SHIPPING_ID = "5a934e000102030405000100";
 
   public static void loadTemplates() {
     of(ShippingResponse.class)
@@ -22,6 +23,7 @@ public final class ShippingResponseTemplate {
               {
                 add("id", SHIPPING_ID);
                 add("orderId", ORDER_ID);
+                add("country", CUSTOMER_ADDRESS_COUNTRY);
               }
             });
   }

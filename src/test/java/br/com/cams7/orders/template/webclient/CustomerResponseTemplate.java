@@ -1,8 +1,9 @@
 package br.com.cams7.orders.template.webclient;
 
 import static br.com.cams7.orders.template.DomainTemplateLoader.CUSTOMER_RESPONSE;
-import static br.com.cams7.orders.template.domain.CustomerTemplate.CUSTOMER_FULLNAME;
+import static br.com.cams7.orders.template.domain.CustomerTemplate.CUSTOMER_FIRSTNAME;
 import static br.com.cams7.orders.template.domain.CustomerTemplate.CUSTOMER_ID;
+import static br.com.cams7.orders.template.domain.CustomerTemplate.CUSTOMER_LASTNAME;
 import static br.com.cams7.orders.template.domain.CustomerTemplate.CUSTOMER_USERNAME;
 import static br.com.six2six.fixturefactory.Fixture.of;
 import static lombok.AccessLevel.PRIVATE;
@@ -21,7 +22,8 @@ public final class CustomerResponseTemplate {
             new Rule() {
               {
                 add("id", CUSTOMER_ID);
-                add("fullName", CUSTOMER_FULLNAME);
+                add("firstName", CUSTOMER_FIRSTNAME);
+                add("lastName", CUSTOMER_LASTNAME);
                 add("username", CUSTOMER_USERNAME);
               }
             });

@@ -10,32 +10,34 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = false)
 public class CreateOrderCommand extends SelfValidating<CreateOrderCommand> {
 
-  private static final String URL_REGEX =
-      "(^http(s)?\\:\\/\\/([\\w\\.\\-]+(\\:[0-9]+)?)\\/[a-z]+\\/[\\w\\-]+(\\/[a-z]+)?$)|(^$)|(^\\s+$)";
+  private static final String BLANK_REGEX = "(^$)|(^\\s+$)";
+  private static final String ID_REGEX = "(^[\\w\\-]+$)|" + BLANK_REGEX;
+  private static final String POSTCODE_REGEX = "(^[\\w\\-]+$)|" + BLANK_REGEX;
+  private static final String CARD_NUMBER_REGEX = "(^\\d+$)|" + BLANK_REGEX;
 
-  @NotBlank(message = "Customer url must not be blank")
-  @Pattern(regexp = URL_REGEX, message = "Invalid customer url")
-  private final String customerUrl;
+  @NotBlank(message = "Customer id must not be blank")
+  @Pattern(regexp = ID_REGEX, message = "Invalid customer id")
+  private final String customerId;
 
-  @NotBlank(message = "Customer address url must not be blank")
-  @Pattern(regexp = URL_REGEX, message = "Invalid customer address url")
-  private final String addressUrl;
+  @NotBlank(message = "Address postcode must not be blank")
+  @Pattern(regexp = POSTCODE_REGEX, message = "Invalid address postcode")
+  private final String addressPostcode;
 
-  @NotBlank(message = "Customer card url must not be blank")
-  @Pattern(regexp = URL_REGEX, message = "Invalid customer card url")
-  private final String cardUrl;
+  @NotBlank(message = "Card number must not be blank")
+  @Pattern(regexp = CARD_NUMBER_REGEX, message = "Invalid card number")
+  private final String cardNumber;
 
-  @NotBlank(message = "Cart items url must not be blank")
-  @Pattern(regexp = URL_REGEX, message = "Invalid cart items url")
-  private final String itemsUrl;
+  @NotBlank(message = "Cart id must not be blank")
+  @Pattern(regexp = ID_REGEX, message = "Invalid cart id")
+  private final String cartId;
 
   public CreateOrderCommand(
-      String customerUrl, String addressUrl, String cardUrl, String itemsUrl) {
+      String customerId, String addressPostcode, String cardNumber, String cartId) {
     super();
-    this.customerUrl = customerUrl;
-    this.addressUrl = addressUrl;
-    this.cardUrl = cardUrl;
-    this.itemsUrl = itemsUrl;
+    this.customerId = customerId;
+    this.addressPostcode = addressPostcode;
+    this.cardNumber = cardNumber;
+    this.cartId = cartId;
     this.validateSelf();
   }
 }

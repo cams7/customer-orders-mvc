@@ -21,6 +21,7 @@ import static br.com.cams7.orders.template.domain.CustomerTemplate.CUSTOMER_ID;
 import static br.com.cams7.orders.template.domain.CustomerTemplate.CUSTOMER_USERNAME;
 import static br.com.cams7.orders.template.domain.OrderEntityTemplate.AUTHORISED_TOTAL_AMOUNT;
 import static br.com.cams7.orders.template.domain.OrderEntityTemplate.ORDER_ID;
+import static br.com.cams7.orders.template.domain.OrderEntityTemplate.REGISTERED_SHIPPING;
 import static br.com.cams7.orders.template.domain.OrderEntityTemplate.REGISTRATION_DATE;
 import static br.com.six2six.fixturefactory.Fixture.of;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
@@ -67,7 +68,7 @@ public final class OrderModelTemplate {
                             CART_ITEM3_PRODUCT_ID, CART_ITEM3_QUANTITY, CART_ITEM3_UNIT_PRICE)));
                 add("registrationDate", LocalDateTime.parse(REGISTRATION_DATE, ISO_DATE_TIME));
                 add("total", AUTHORISED_TOTAL_AMOUNT);
-                add("registeredShipping", true);
+                add("registeredShipping", REGISTERED_SHIPPING);
               }
             });
   }

@@ -18,7 +18,7 @@ public abstract class BaseWebClientTests extends BaseTests {
   @MockBean private RestTemplate restTemplate;
 
   @SuppressWarnings("unchecked")
-  protected <T> void mockGet(String url, T response) {
+  protected <T> void mockGet(T response) {
     var responseEntityMock = mock(ResponseEntity.class);
     given(restTemplate.exchange(any(RequestEntity.class), eq(response.getClass())))
         .willReturn(responseEntityMock);
@@ -26,8 +26,7 @@ public abstract class BaseWebClientTests extends BaseTests {
   }
 
   @SuppressWarnings("unchecked")
-  protected <T> void mockGet(
-      String url, List<T> response, ParameterizedTypeReference<List<T>> responseType) {
+  protected <T> void mockGet(List<T> response, ParameterizedTypeReference<List<T>> responseType) {
     var responseEntityMock = mock(ResponseEntity.class);
     given(restTemplate.exchange(any(RequestEntity.class), eq(responseType)))
         .willReturn(responseEntityMock);
@@ -35,7 +34,7 @@ public abstract class BaseWebClientTests extends BaseTests {
   }
 
   @SuppressWarnings("unchecked")
-  protected <T> void mockPost(String url, T response) {
+  protected <T> void mockPost(T response) {
     var responseEntityMock = mock(ResponseEntity.class);
     given(restTemplate.exchange(any(RequestEntity.class), eq(response.getClass())))
         .willReturn(responseEntityMock);

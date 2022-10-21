@@ -1,5 +1,10 @@
 package br.com.cams7.orders.core.port.in.params;
 
+import static br.com.cams7.orders.template.CreateOrderRequestTemplate.CART_ID;
+import static br.com.cams7.orders.template.CreateOrderRequestTemplate.INVALID_VALUE;
+import static br.com.cams7.orders.template.domain.CustomerAddressTemplate.CUSTOMER_ADDRESS_POSTCODE;
+import static br.com.cams7.orders.template.domain.CustomerCardTemplate.CUSTOMER_CARD_LONG_NUM;
+import static br.com.cams7.orders.template.domain.CustomerTemplate.CUSTOMER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertThrows;
 
@@ -15,13 +20,7 @@ public class CreateOrderCommandTests {
   @Test
   @DisplayName("Should create command instance when pass valid params")
   void shouldCreateCommandInstanceWhenPassValidParams() {
-
-    var customerUrl = "http://localhost/customers/703c327b-8b61-4f32-bf1a-fb3108a6f7e1";
-    var addressUrl = "http://localhost:3000/addresses/a679084a-03e7-49c7-9516-5a7d6757e1c2";
-    var cardUrl = "https://customers/cards/818c8544-dfb1-49b2-8212-eb9dcdbd57c9";
-    var itemsUrl = "http://carts.test.com/carts/bad2ba11-19b2-4af8-b41e-dccc47f69929/items";
-
-    new CreateOrderCommand(customerUrl, addressUrl, cardUrl, itemsUrl);
+    new CreateOrderCommand(CUSTOMER_ID, CUSTOMER_ADDRESS_POSTCODE, CUSTOMER_CARD_LONG_NUM, CART_ID);
   }
 
   @Test
@@ -33,12 +32,11 @@ public class CreateOrderCommandTests {
             () -> {
               new CreateOrderCommand(null, null, null, null);
             });
+    assertThat(exception.getMessage()).containsAnyOf("customerId: Customer id must not be blank");
     assertThat(exception.getMessage())
-        .containsAnyOf("addressUrl: Customer address url must not be blank");
-    assertThat(exception.getMessage()).containsAnyOf("customerUrl: Customer url must not be blank");
-    assertThat(exception.getMessage()).containsAnyOf("itemsUrl: Cart items url must not be blank");
-    assertThat(exception.getMessage())
-        .containsAnyOf("cardUrl: Customer card url must not be blank");
+        .containsAnyOf("addressPostcode: Address postcode must not be blank");
+    assertThat(exception.getMessage()).containsAnyOf("cardNumber: Card number must not be blank");
+    assertThat(exception.getMessage()).containsAnyOf("cartId: Cart id must not be blank");
   }
 
   @Test
@@ -51,12 +49,11 @@ public class CreateOrderCommandTests {
             () -> {
               new CreateOrderCommand(emptyString, emptyString, emptyString, emptyString);
             });
+    assertThat(exception.getMessage()).containsAnyOf("customerId: Customer id must not be blank");
     assertThat(exception.getMessage())
-        .containsAnyOf("addressUrl: Customer address url must not be blank");
-    assertThat(exception.getMessage()).containsAnyOf("customerUrl: Customer url must not be blank");
-    assertThat(exception.getMessage()).containsAnyOf("itemsUrl: Cart items url must not be blank");
-    assertThat(exception.getMessage())
-        .containsAnyOf("cardUrl: Customer card url must not be blank");
+        .containsAnyOf("addressPostcode: Address postcode must not be blank");
+    assertThat(exception.getMessage()).containsAnyOf("cardNumber: Card number must not be blank");
+    assertThat(exception.getMessage()).containsAnyOf("cartId: Cart id must not be blank");
   }
 
   @Test
@@ -69,27 +66,25 @@ public class CreateOrderCommandTests {
             () -> {
               new CreateOrderCommand(blankString, blankString, blankString, blankString);
             });
+    assertThat(exception.getMessage()).containsAnyOf("customerId: Customer id must not be blank");
     assertThat(exception.getMessage())
-        .containsAnyOf("addressUrl: Customer address url must not be blank");
-    assertThat(exception.getMessage()).containsAnyOf("customerUrl: Customer url must not be blank");
-    assertThat(exception.getMessage()).containsAnyOf("itemsUrl: Cart items url must not be blank");
-    assertThat(exception.getMessage())
-        .containsAnyOf("cardUrl: Customer card url must not be blank");
+        .containsAnyOf("addressPostcode: Address postcode must not be blank");
+    assertThat(exception.getMessage()).containsAnyOf("cardNumber: Card number must not be blank");
+    assertThat(exception.getMessage()).containsAnyOf("cartId: Cart id must not be blank");
   }
 
   @Test
   @DisplayName("Shouldn't create command instance when pass invalid URLs")
   void shouldNotCreateCommandInstanceWhenPassInvalidUrls() {
-    var invalidUrl = "http://wrong/test";
     var exception =
         assertThrows(
             ConstraintViolationException.class,
             () -> {
-              new CreateOrderCommand(invalidUrl, invalidUrl, invalidUrl, invalidUrl);
+              new CreateOrderCommand(INVALID_VALUE, INVALID_VALUE, INVALID_VALUE, INVALID_VALUE);
             });
-    assertThat(exception.getMessage()).containsAnyOf("addressUrl: Invalid customer address url");
-    assertThat(exception.getMessage()).containsAnyOf("customerUrl: Invalid customer url");
-    assertThat(exception.getMessage()).containsAnyOf("itemsUrl: Invalid cart items url");
-    assertThat(exception.getMessage()).containsAnyOf("cardUrl: Invalid customer card url");
+    assertThat(exception.getMessage()).containsAnyOf("customerId: Invalid customer id");
+    assertThat(exception.getMessage()).containsAnyOf("addressPostcode: Invalid address postcode");
+    assertThat(exception.getMessage()).containsAnyOf("cardNumber: Invalid card number");
+    assertThat(exception.getMessage()).containsAnyOf("cartId: Invalid cart id");
   }
 }

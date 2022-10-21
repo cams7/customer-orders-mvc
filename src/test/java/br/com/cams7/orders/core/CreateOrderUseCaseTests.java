@@ -49,6 +49,7 @@ import br.com.cams7.orders.core.port.out.UpdateShippingByIdRepositoryPort;
 import br.com.cams7.orders.core.port.out.VerifyPaymentServicePort;
 import br.com.cams7.orders.core.port.out.exception.ResponseStatusException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -96,41 +97,55 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customer));
-    given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerCard));
-    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customer)));
+    given(
+            getCustomerAddressService.getCustomerAddress(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerAddress)));
+    given(
+            getCustomerCardService.getCustomerCard(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerCard)));
+    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString(), anyString()))
         .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
-        .willReturn(CompletableFuture.completedFuture(payment));
+        .willReturn(CompletableFuture.completedFuture(Optional.of(payment)));
     given(addShippingOrderService.add(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(order.getOrderId()));
-    given(createOrderRepository.create(anyString(), any(OrderEntity.class))).willReturn(order);
+        .willReturn(CompletableFuture.completedFuture(Optional.of(order.getOrderId())));
+    given(createOrderRepository.create(anyString(), any(OrderEntity.class)))
+        .willReturn(Optional.of(order));
     given(updateShippingByIdRepository.updateShipping(anyString(), anyString(), anyBoolean()))
-        .willReturn(1l);
+        .willReturn(Optional.of(1l));
 
     var data = createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, REQUEST_TRACE_ID, createOrder);
 
-    assertThat(data).isEqualTo(order);
+    assertThat(data.get()).isEqualTo(order);
 
     then(getCustomerService)
         .should(times(1))
         .getCustomer(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerId()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getAddressUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getAddressPostcode()));
     then(getCustomerCardService)
         .should(times(1))
         .getCustomerCard(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCardUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCardNumber()));
     then(getCartItemsService)
         .should(times(1))
         .getCartItems(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getItemsUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCartId()));
     then(verifyPaymentService)
         .should(times(1))
         .verify(
@@ -174,41 +189,55 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customer));
-    given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerCard));
-    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customer)));
+    given(
+            getCustomerAddressService.getCustomerAddress(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerAddress)));
+    given(
+            getCustomerCardService.getCustomerCard(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerCard)));
+    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString(), anyString()))
         .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
-        .willReturn(CompletableFuture.completedFuture(payment));
+        .willReturn(CompletableFuture.completedFuture(Optional.of(payment)));
     given(addShippingOrderService.add(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(""));
-    given(createOrderRepository.create(anyString(), any(OrderEntity.class))).willReturn(order);
+        .willReturn(CompletableFuture.completedFuture(Optional.of("")));
+    given(createOrderRepository.create(anyString(), any(OrderEntity.class)))
+        .willReturn(Optional.of(order));
     given(updateShippingByIdRepository.updateShipping(anyString(), anyString(), anyBoolean()))
-        .willReturn(1l);
+        .willReturn(Optional.of(1l));
 
     var data = createOrderUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, REQUEST_TRACE_ID, createOrder);
 
-    assertThat(data).isEqualTo(order.withRegisteredShipping(false));
+    assertThat(data.get()).isEqualTo(order.withRegisteredShipping(false));
 
     then(getCustomerService)
         .should(times(1))
         .getCustomer(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerId()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getAddressUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getAddressPostcode()));
     then(getCustomerCardService)
         .should(times(1))
         .getCustomerCard(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCardUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCardNumber()));
     then(getCartItemsService)
         .should(times(1))
         .getCartItems(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getItemsUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCartId()));
     then(verifyPaymentService)
         .should(times(1))
         .verify(
@@ -254,15 +283,19 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Payment payment = from(Payment.class).gimme(DECLINED_PAYMENT);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customer));
-    given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerCard));
-    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customer)));
+    given(
+            getCustomerAddressService.getCustomerAddress(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerAddress)));
+    given(
+            getCustomerCardService.getCustomerCard(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerCard)));
+    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString(), anyString()))
         .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
-        .willReturn(CompletableFuture.completedFuture(payment));
+        .willReturn(CompletableFuture.completedFuture(Optional.of(payment)));
 
     var exception =
         assertThrows(
@@ -276,19 +309,28 @@ public class CreateOrderUseCaseTests extends BaseTests {
     then(getCustomerService)
         .should(times(1))
         .getCustomer(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerId()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getAddressUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getAddressPostcode()));
     then(getCustomerCardService)
         .should(times(1))
         .getCustomerCard(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCardUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCardNumber()));
     then(getCartItemsService)
         .should(times(1))
         .getCartItems(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getItemsUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCartId()));
     then(verifyPaymentService)
         .should(times(1))
         .verify(
@@ -313,12 +355,16 @@ public class CreateOrderUseCaseTests extends BaseTests {
     List<CartItem> cartItems = List.of();
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customer));
-    given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerCard));
-    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customer)));
+    given(
+            getCustomerAddressService.getCustomerAddress(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerAddress)));
+    given(
+            getCustomerCardService.getCustomerCard(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerCard)));
+    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString(), anyString()))
         .willReturn(CompletableFuture.completedFuture(cartItems));
 
     var exception =
@@ -333,19 +379,28 @@ public class CreateOrderUseCaseTests extends BaseTests {
     then(getCustomerService)
         .should(times(1))
         .getCustomer(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerId()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getAddressUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getAddressPostcode()));
     then(getCustomerCardService)
         .should(times(1))
         .getCustomerCard(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCardUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCardNumber()));
     then(getCartItemsService)
         .should(times(1))
         .getCartItems(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getItemsUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCartId()));
     then(verifyPaymentService)
         .should(never())
         .verify(anyString(), anyString(), anyString(), anyFloat());
@@ -375,14 +430,16 @@ public class CreateOrderUseCaseTests extends BaseTests {
     then(getCustomerService)
         .should(times(1))
         .getCustomer(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerId()));
     then(getCustomerAddressService)
         .should(never())
-        .getCustomerAddress(anyString(), anyString(), anyString());
+        .getCustomerAddress(anyString(), anyString(), anyString(), anyString());
     then(getCustomerCardService)
         .should(never())
-        .getCustomerCard(anyString(), anyString(), anyString());
-    then(getCartItemsService).should(never()).getCartItems(anyString(), anyString(), anyString());
+        .getCustomerCard(anyString(), anyString(), anyString(), anyString());
+    then(getCartItemsService)
+        .should(never())
+        .getCartItems(anyString(), anyString(), anyString(), anyString());
     then(verifyPaymentService)
         .should(never())
         .verify(anyString(), anyString(), anyString(), anyFloat());
@@ -401,8 +458,10 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Customer customer = from(Customer.class).gimme(CUSTOMER);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customer));
-    given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customer)));
+    given(
+            getCustomerAddressService.getCustomerAddress(
+                anyString(), anyString(), anyString(), anyString()))
         .willThrow(new RuntimeException(ERROR_MESSAGE));
 
     var exception =
@@ -416,15 +475,20 @@ public class CreateOrderUseCaseTests extends BaseTests {
     then(getCustomerService)
         .should(times(1))
         .getCustomer(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerId()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getAddressUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getAddressPostcode()));
     then(getCustomerCardService)
         .should(never())
-        .getCustomerCard(anyString(), anyString(), anyString());
-    then(getCartItemsService).should(never()).getCartItems(anyString(), anyString(), anyString());
+        .getCustomerCard(anyString(), anyString(), anyString(), anyString());
+    then(getCartItemsService)
+        .should(never())
+        .getCartItems(anyString(), anyString(), anyString(), anyString());
     then(verifyPaymentService)
         .should(never())
         .verify(anyString(), anyString(), anyString(), anyFloat());
@@ -444,10 +508,14 @@ public class CreateOrderUseCaseTests extends BaseTests {
     CustomerAddress customerAddress = from(CustomerAddress.class).gimme(CUSTOMER_ADDRESS);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customer));
-    given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customer)));
+    given(
+            getCustomerAddressService.getCustomerAddress(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerAddress)));
+    given(
+            getCustomerCardService.getCustomerCard(
+                anyString(), anyString(), anyString(), anyString()))
         .willThrow(new RuntimeException(ERROR_MESSAGE));
 
     var exception =
@@ -461,16 +529,24 @@ public class CreateOrderUseCaseTests extends BaseTests {
     then(getCustomerService)
         .should(times(1))
         .getCustomer(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerId()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getAddressUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getAddressPostcode()));
     then(getCustomerCardService)
         .should(times(1))
         .getCustomerCard(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCardUrl()));
-    then(getCartItemsService).should(never()).getCartItems(anyString(), anyString(), anyString());
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCardNumber()));
+    then(getCartItemsService)
+        .should(never())
+        .getCartItems(anyString(), anyString(), anyString(), anyString());
     then(verifyPaymentService)
         .should(never())
         .verify(anyString(), anyString(), anyString(), anyFloat());
@@ -491,12 +567,16 @@ public class CreateOrderUseCaseTests extends BaseTests {
     CustomerCard customerCard = from(CustomerCard.class).gimme(CUSTOMER_CARD);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customer));
-    given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerCard));
-    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customer)));
+    given(
+            getCustomerAddressService.getCustomerAddress(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerAddress)));
+    given(
+            getCustomerCardService.getCustomerCard(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerCard)));
+    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString(), anyString()))
         .willThrow(new RuntimeException(ERROR_MESSAGE));
 
     var exception =
@@ -510,19 +590,28 @@ public class CreateOrderUseCaseTests extends BaseTests {
     then(getCustomerService)
         .should(times(1))
         .getCustomer(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerId()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getAddressUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getAddressPostcode()));
     then(getCustomerCardService)
         .should(times(1))
         .getCustomerCard(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCardUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCardNumber()));
     then(getCartItemsService)
         .should(times(1))
         .getCartItems(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getItemsUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCartId()));
     then(verifyPaymentService)
         .should(never())
         .verify(anyString(), anyString(), anyString(), anyFloat());
@@ -547,12 +636,16 @@ public class CreateOrderUseCaseTests extends BaseTests {
             from(CartItem.class).gimme(CART_ITEM3));
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customer));
-    given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerCard));
-    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customer)));
+    given(
+            getCustomerAddressService.getCustomerAddress(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerAddress)));
+    given(
+            getCustomerCardService.getCustomerCard(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerCard)));
+    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString(), anyString()))
         .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
         .willThrow(new RuntimeException(ERROR_MESSAGE));
@@ -568,19 +661,28 @@ public class CreateOrderUseCaseTests extends BaseTests {
     then(getCustomerService)
         .should(times(1))
         .getCustomer(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerId()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getAddressUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getAddressPostcode()));
     then(getCustomerCardService)
         .should(times(1))
         .getCustomerCard(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCardUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCardNumber()));
     then(getCartItemsService)
         .should(times(1))
         .getCartItems(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getItemsUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCartId()));
     then(verifyPaymentService)
         .should(times(1))
         .verify(
@@ -608,15 +710,19 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customer));
-    given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerCard));
-    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customer)));
+    given(
+            getCustomerAddressService.getCustomerAddress(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerAddress)));
+    given(
+            getCustomerCardService.getCustomerCard(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerCard)));
+    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString(), anyString()))
         .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
-        .willReturn(CompletableFuture.completedFuture(payment));
+        .willReturn(CompletableFuture.completedFuture(Optional.of(payment)));
     given(createOrderRepository.create(anyString(), any(OrderEntity.class)))
         .willThrow(new RuntimeException(ERROR_MESSAGE));
 
@@ -631,19 +737,28 @@ public class CreateOrderUseCaseTests extends BaseTests {
     then(getCustomerService)
         .should(times(1))
         .getCustomer(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerId()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getAddressUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getAddressPostcode()));
     then(getCustomerCardService)
         .should(times(1))
         .getCustomerCard(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCardUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCardNumber()));
     then(getCartItemsService)
         .should(times(1))
         .getCartItems(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getItemsUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCartId()));
     then(verifyPaymentService)
         .should(times(1))
         .verify(
@@ -684,16 +799,21 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customer));
-    given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerCard));
-    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customer)));
+    given(
+            getCustomerAddressService.getCustomerAddress(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerAddress)));
+    given(
+            getCustomerCardService.getCustomerCard(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerCard)));
+    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString(), anyString()))
         .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
-        .willReturn(CompletableFuture.completedFuture(payment));
-    given(createOrderRepository.create(anyString(), any(OrderEntity.class))).willReturn(order);
+        .willReturn(CompletableFuture.completedFuture(Optional.of(payment)));
+    given(createOrderRepository.create(anyString(), any(OrderEntity.class)))
+        .willReturn(Optional.of(order));
     given(addShippingOrderService.add(anyString(), anyString(), anyString()))
         .willThrow(new RuntimeException(ERROR_MESSAGE));
 
@@ -708,19 +828,28 @@ public class CreateOrderUseCaseTests extends BaseTests {
     then(getCustomerService)
         .should(times(1))
         .getCustomer(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerId()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getAddressUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getAddressPostcode()));
     then(getCustomerCardService)
         .should(times(1))
         .getCustomerCard(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCardUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCardNumber()));
     then(getCartItemsService)
         .should(times(1))
         .getCartItems(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getItemsUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCartId()));
     then(verifyPaymentService)
         .should(times(1))
         .verify(
@@ -763,20 +892,25 @@ public class CreateOrderUseCaseTests extends BaseTests {
     Payment payment = from(Payment.class).gimme(AUTHORISED_PAYMENT);
 
     given(getCustomerService.getCustomer(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customer));
-    given(getCustomerAddressService.getCustomerAddress(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerAddress));
-    given(getCustomerCardService.getCustomerCard(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(customerCard));
-    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customer)));
+    given(
+            getCustomerAddressService.getCustomerAddress(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerAddress)));
+    given(
+            getCustomerCardService.getCustomerCard(
+                anyString(), anyString(), anyString(), anyString()))
+        .willReturn(CompletableFuture.completedFuture(Optional.of(customerCard)));
+    given(getCartItemsService.getCartItems(anyString(), anyString(), anyString(), anyString()))
         .willReturn(CompletableFuture.completedFuture(cartItems));
     given(verifyPaymentService.verify(anyString(), anyString(), anyString(), anyFloat()))
-        .willReturn(CompletableFuture.completedFuture(payment));
+        .willReturn(CompletableFuture.completedFuture(Optional.of(payment)));
     given(addShippingOrderService.add(anyString(), anyString(), anyString()))
-        .willReturn(CompletableFuture.completedFuture(order.getOrderId()));
-    given(createOrderRepository.create(anyString(), any(OrderEntity.class))).willReturn(order);
+        .willReturn(CompletableFuture.completedFuture(Optional.of(order.getOrderId())));
+    given(createOrderRepository.create(anyString(), any(OrderEntity.class)))
+        .willReturn(Optional.of(order));
     given(updateShippingByIdRepository.updateShipping(anyString(), anyString(), anyBoolean()))
-        .willReturn(0l);
+        .willReturn(Optional.of(0l));
 
     var exception =
         assertThrows(
@@ -793,19 +927,28 @@ public class CreateOrderUseCaseTests extends BaseTests {
     then(getCustomerService)
         .should(times(1))
         .getCustomer(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCustomerId()));
     then(getCustomerAddressService)
         .should(times(1))
         .getCustomerAddress(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getAddressUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getAddressPostcode()));
     then(getCustomerCardService)
         .should(times(1))
         .getCustomerCard(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getCardUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCardNumber()));
     then(getCartItemsService)
         .should(times(1))
         .getCartItems(
-            eq(CUSTOMER_ADDRESS_COUNTRY), eq(REQUEST_TRACE_ID), eq(createOrder.getItemsUrl()));
+            eq(CUSTOMER_ADDRESS_COUNTRY),
+            eq(REQUEST_TRACE_ID),
+            eq(createOrder.getCustomerId()),
+            eq(createOrder.getCartId()));
     then(verifyPaymentService)
         .should(times(1))
         .verify(
@@ -839,9 +982,9 @@ public class CreateOrderUseCaseTests extends BaseTests {
   private static CreateOrderCommand getCreateOrder() {
     CreateOrderRequest request = from(CreateOrderRequest.class).gimme(VALID_CREATE_ORDER_REQUEST);
     return new CreateOrderCommand(
-        request.getCustomerUrl(),
-        request.getAddressUrl(),
-        request.getCardUrl(),
-        request.getItemsUrl());
+        request.getCustomerId(),
+        request.getAddressPostcode(),
+        request.getCardNumber(),
+        request.getCartId());
   }
 }

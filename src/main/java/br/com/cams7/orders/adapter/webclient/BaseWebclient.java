@@ -6,26 +6,26 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.http.RequestEntity.get;
 import static org.springframework.http.RequestEntity.post;
 
+import java.net.URI;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.RequestEntity;
 
 public abstract class BaseWebclient {
 
-  protected static RequestEntity<Void> getRequest(
-      String url, String country, String requestTraceId) {
+  protected static RequestEntity<Void> getRequest(URI url, String country, String requestTraceId) {
     return getRequest(url, getHeaders(country, requestTraceId));
   }
 
-  private static RequestEntity<Void> getRequest(String url, HttpHeaders headers) {
+  private static RequestEntity<Void> getRequest(URI url, HttpHeaders headers) {
     return get(url).accept(APPLICATION_JSON).headers(headers).build();
   }
 
   protected static <T> RequestEntity<T> getRequest(
-      String url, String country, String requestTraceId, T body) {
+      URI url, String country, String requestTraceId, T body) {
     return getRequest(url, getHeaders(country, requestTraceId), body);
   }
 
-  private static <T> RequestEntity<T> getRequest(String url, HttpHeaders headers, T body) {
+  private static <T> RequestEntity<T> getRequest(URI url, HttpHeaders headers, T body) {
     return post(url)
         .contentType(APPLICATION_JSON)
         .accept(APPLICATION_JSON)

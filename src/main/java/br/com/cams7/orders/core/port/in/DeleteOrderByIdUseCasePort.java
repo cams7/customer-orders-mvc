@@ -1,6 +1,8 @@
 package br.com.cams7.orders.core.port.in;
 
+import java.util.Optional;
+
 @FunctionalInterface
 public interface DeleteOrderByIdUseCasePort {
-  void execute(String country, String orderId);
+  Optional<Long> execute(String country, String orderId);
 }

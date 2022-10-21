@@ -12,6 +12,7 @@ import static org.mockito.Mockito.times;
 
 import br.com.cams7.orders.BaseTests;
 import br.com.cams7.orders.core.port.out.DeleteOrderByIdRepositoryPort;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +30,7 @@ public class DeleteOrderByIdUseCaseTests extends BaseTests {
   @Test
   @DisplayName("Should delete order when pass valid order id")
   void shouldDeleteOrderWhenPassValidOrderId() {
-    given(deleteOrderByIdRepository.delete(anyString(), anyString())).willReturn(1l);
+    given(deleteOrderByIdRepository.delete(anyString(), anyString())).willReturn(Optional.of(1l));
 
     deleteOrderByIdUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, ORDER_ID);
 

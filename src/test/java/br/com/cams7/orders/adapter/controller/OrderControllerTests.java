@@ -54,8 +54,6 @@ import org.springframework.data.mongodb.core.query.Query;
 public class OrderControllerTests extends BaseIntegrationTests {
 
   private static final String INVALID_COUNTRY = "DO";
-  private static final String PAYMENT_URL = "http://test/payments";
-  private static final String SHIPPING_URL = "http://test/shippings";
 
   private static final String PATH = "/orders";
 
@@ -261,15 +259,16 @@ public class OrderControllerTests extends BaseIntegrationTests {
         from(PaymentResponse.class).gimme(AUTHORISED_PAYMENT_RESPONSE);
     ShippingResponse shippingResponse = from(ShippingResponse.class).gimme(SHIPPING_RESPONSE);
 
-    mockGet(request.getCustomerUrl(), customerResponse);
-    mockGet(request.getAddressUrl(), customerAddressResponse);
-    mockGet(request.getCardUrl(), customerCardResponse);
+    mockGet(customerResponse);
     mockGet(
-        request.getItemsUrl(),
-        cartItemsResponse,
-        new ParameterizedTypeReference<List<CartItemResponse>>() {});
-    mockPost(PAYMENT_URL, paymentResponse);
-    mockPost(SHIPPING_URL, shippingResponse);
+        List.of(customerAddressResponse),
+        new ParameterizedTypeReference<List<CustomerAddressResponse>>() {});
+    mockGet(
+        List.of(customerCardResponse),
+        new ParameterizedTypeReference<List<CustomerCardResponse>>() {});
+    mockGet(cartItemsResponse, new ParameterizedTypeReference<List<CartItemResponse>>() {});
+    mockPost(paymentResponse);
+    mockPost(shippingResponse);
 
     mockMvc
         .perform(
@@ -332,14 +331,15 @@ public class OrderControllerTests extends BaseIntegrationTests {
             from(CartItemResponse.class).gimme(CART_ITEM_RESPONSE3));
     PaymentResponse paymentResponse = from(PaymentResponse.class).gimme(DECLINED_PAYMENT_RESPONSE);
 
-    mockGet(request.getCustomerUrl(), customerResponse);
-    mockGet(request.getAddressUrl(), customerAddressResponse);
-    mockGet(request.getCardUrl(), customerCardResponse);
+    mockGet(customerResponse);
     mockGet(
-        request.getItemsUrl(),
-        cartItemsResponse,
-        new ParameterizedTypeReference<List<CartItemResponse>>() {});
-    mockPost(PAYMENT_URL, paymentResponse);
+        List.of(customerAddressResponse),
+        new ParameterizedTypeReference<List<CustomerAddressResponse>>() {});
+    mockGet(
+        List.of(customerCardResponse),
+        new ParameterizedTypeReference<List<CustomerCardResponse>>() {});
+    mockGet(cartItemsResponse, new ParameterizedTypeReference<List<CartItemResponse>>() {});
+    mockPost(paymentResponse);
 
     mockMvc
         .perform(
@@ -381,13 +381,14 @@ public class OrderControllerTests extends BaseIntegrationTests {
         from(CustomerCardResponse.class).gimme(CUSTOMER_CARD_RESPONSE);
     List<CartItemResponse> cartItemsResponse = List.of();
 
-    mockGet(request.getCustomerUrl(), customerResponse);
-    mockGet(request.getAddressUrl(), customerAddressResponse);
-    mockGet(request.getCardUrl(), customerCardResponse);
+    mockGet(customerResponse);
     mockGet(
-        request.getItemsUrl(),
-        cartItemsResponse,
-        new ParameterizedTypeReference<List<CartItemResponse>>() {});
+        List.of(customerAddressResponse),
+        new ParameterizedTypeReference<List<CustomerAddressResponse>>() {});
+    mockGet(
+        List.of(customerCardResponse),
+        new ParameterizedTypeReference<List<CustomerCardResponse>>() {});
+    mockGet(cartItemsResponse, new ParameterizedTypeReference<List<CartItemResponse>>() {});
 
     mockMvc
         .perform(
@@ -437,8 +438,8 @@ public class OrderControllerTests extends BaseIntegrationTests {
         .andExpect(jsonPath(ERROR_ATTRIBUTE, is(BAD_REQUEST_NAME)))
         .andExpect(jsonPath(REQUESTID_ATTRIBUTE, is(REQUEST_TRACE_ID)))
         .andExpect(jsonPath(EXCEPTION_ATTRIBUTE, is(ConstraintViolationException.class.getName())))
-        .andExpect(jsonPath(ERRORS0_MESSAGE_ATTRIBUTE, is("Invalid customer url")))
-        .andExpect(jsonPath(ERRORS0_FIELD_ATTRIBUTE, is("customerUrl")));
+        .andExpect(jsonPath(ERRORS0_MESSAGE_ATTRIBUTE, is("Invalid customer id")))
+        .andExpect(jsonPath(ERRORS0_FIELD_ATTRIBUTE, is("customerId")));
 
     var total =
         mongoTemplate.count(

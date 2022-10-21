@@ -7,5 +7,5 @@ import java.util.concurrent.CompletableFuture;
 @FunctionalInterface
 public interface GetCartItemsServicePort {
   CompletableFuture<List<CartItem>> getCartItems(
-      String country, String requestTraceId, String itemsUrl);
+      String country, String requestTraceId, String customerId, String cartId);
 }

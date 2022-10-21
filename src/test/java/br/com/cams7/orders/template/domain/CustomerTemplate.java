@@ -11,8 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PRIVATE)
 public final class CustomerTemplate {
 
-  public static final String CUSTOMER_ID = "703c327b-8b61-4f32-bf1a-fb3108a6f7e1";
-  public static final String CUSTOMER_FULLNAME = "Gustavo Severino Tomás Ramos";
+  public static final String CUSTOMER_ID = "57a98d98e4b00679b4a830af";
+  public static final String CUSTOMER_FIRSTNAME = "Gustavo";
+  public static final String CUSTOMER_LASTNAME = "Ramos";
+  public static final String CUSTOMER_FULLNAME =
+      String.format("%s %s", CUSTOMER_FIRSTNAME, CUSTOMER_LASTNAME);
   public static final String CUSTOMER_USERNAME = "gustavo";
 
   public static void loadTemplates() {
@@ -22,6 +25,8 @@ public final class CustomerTemplate {
             new Rule() {
               {
                 add("customerId", CUSTOMER_ID);
+                add("firstName", CUSTOMER_FIRSTNAME);
+                add("lastName", CUSTOMER_LASTNAME);
                 add("fullName", CUSTOMER_FULLNAME);
                 add("username", CUSTOMER_USERNAME);
               }

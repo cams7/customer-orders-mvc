@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PRIVATE)
 public final class CustomerAddressTemplate {
 
-  public static final String CUSTOMER_ADDRESS_ID = "a679084a-03e7-49c7-9516-5a7d6757e1c2";
+  public static final String CUSTOMER_ADDRESS_ID = "57a98d98e4b00679b4a830ad";
   public static final String CUSTOMER_ADDRESS_NUMBER = "956";
   public static final String CUSTOMER_ADDRESS_STREET = "Rua Manoel Gregório Mattos";
   public static final String CUSTOMER_ADDRESS_POSTCODE = "89816-170";

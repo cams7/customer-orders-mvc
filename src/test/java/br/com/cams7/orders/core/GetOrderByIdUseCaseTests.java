@@ -15,6 +15,7 @@ import static org.mockito.Mockito.times;
 import br.com.cams7.orders.BaseTests;
 import br.com.cams7.orders.core.domain.OrderEntity;
 import br.com.cams7.orders.core.port.out.GetOrderByIdRepositoryPort;
+import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,11 +35,11 @@ public class GetOrderByIdUseCaseTests extends BaseTests {
   void shouldGetOrderWhenPassValidOrderId() {
     OrderEntity order = from(OrderEntity.class).gimme(AUTHORISED_ORDER_ENTITY);
 
-    given(getOrderByIdRepository.getOrder(anyString(), anyString())).willReturn(order);
+    given(getOrderByIdRepository.getOrder(anyString(), anyString())).willReturn(Optional.of(order));
 
     var data = getOrderByIdUseCase.execute(CUSTOMER_ADDRESS_COUNTRY, ORDER_ID);
 
-    assertThat(data).isEqualTo(order);
+    assertThat(data.get()).isEqualTo(order);
 
     then(getOrderByIdRepository)
         .should(times(1))

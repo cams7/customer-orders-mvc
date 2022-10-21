@@ -1,6 +1,8 @@
 package br.com.cams7.orders.core.port.out;
 
+import java.util.Optional;
+
 @FunctionalInterface
 public interface DeleteOrderByIdRepositoryPort {
-  Long delete(String country, String orderId);
+  Optional<Long> delete(String country, String orderId);
 }

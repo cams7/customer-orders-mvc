@@ -14,8 +14,12 @@ logging:
     ROOT: ${LOG_ROOT_LEVEL:INFO}
       
 api:
-  paymentUrl: ${PAYMENT_URL:http://localhost:8082/payments}
-  shippingUrl: ${SHIPPING_URL:http://localhost:8083/shippings}
+  paymentUrl: ${PAYMENT_URL:http://localhost:8082}
+  shippingUrl: ${SHIPPING_URL:http://localhost:8083}
+  customerUrl: ${CUSTOMER_URL:http://localhost:8084}
+  addressUrl: ${ADDRESS_URL:http://localhost:8084}
+  cardUrl: ${CARD_URL:http://localhost:8084}
+  cartUrl: ${CART_URL:http://localhost:8085}
       
 zone:
   ids: ${ZONE_IDS:DO:"America/Dominica",  BR:"America/Sao_Paulo", AR:"America/Buenos_Aires", EN:"America/New_York",   CO:"America/Bogota", EC:"America/Guayaquil", PE:"America/Lima", ZA:"Africa/Johannesburg", MX:"America/Mexico_City"}

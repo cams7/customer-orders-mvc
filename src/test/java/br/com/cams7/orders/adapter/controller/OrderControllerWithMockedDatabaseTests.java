@@ -57,8 +57,6 @@ import org.springframework.core.ParameterizedTypeReference;
 @AutoConfigureWebTestClient(timeout = "300000")
 public class OrderControllerWithMockedDatabaseTests extends BaseIntegrationTests {
 
-  private static final String PAYMENT_URL = "http://test/payments";
-
   private static final String PATH = "/orders";
 
   @MockBean private GetOrdersByCountryRepositoryPort getOrdersRepository;
@@ -168,14 +166,15 @@ public class OrderControllerWithMockedDatabaseTests extends BaseIntegrationTests
     PaymentResponse paymentResponse =
         from(PaymentResponse.class).gimme(AUTHORISED_PAYMENT_RESPONSE);
 
-    mockGet(request.getCustomerUrl(), customerResponse);
-    mockGet(request.getAddressUrl(), customerAddressResponse);
-    mockGet(request.getCardUrl(), customerCardResponse);
+    mockGet(customerResponse);
     mockGet(
-        request.getItemsUrl(),
-        cartItemsResponse,
-        new ParameterizedTypeReference<List<CartItemResponse>>() {});
-    mockPost(PAYMENT_URL, paymentResponse);
+        List.of(customerAddressResponse),
+        new ParameterizedTypeReference<List<CustomerAddressResponse>>() {});
+    mockGet(
+        List.of(customerCardResponse),
+        new ParameterizedTypeReference<List<CustomerCardResponse>>() {});
+    mockGet(cartItemsResponse, new ParameterizedTypeReference<List<CartItemResponse>>() {});
+    mockPost(paymentResponse);
 
     given(createOrderRepository.create(anyString(), any(OrderEntity.class)))
         .willThrow(new MongoException(ERROR_MESSAGE));

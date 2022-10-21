@@ -33,3 +33,4 @@ build/
 .vscode/
 
 .attach_pid*
+hs_err_pid*.log

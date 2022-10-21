@@ -4,8 +4,12 @@ spring:
       version: 3.5.5
       
 api:
-  paymentUrl: http://test/payments
-  shippingUrl: http://test/shippings
+  paymentUrl: http://payments
+  shippingUrl: http://shippings
+  customerUrl: http://customers
+  addressUrl: http://addresses
+  cardUrl: http://cards
+  cartUrl: http://carts
   
 logging:
   level:

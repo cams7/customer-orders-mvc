@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PRIVATE)
 public final class CustomerCardTemplate {
 
-  public static final String CUSTOMER_CARD_ID = "818c8544-dfb1-49b2-8212-eb9dcdbd57c9";
-  public static final String CUSTOMER_CARD_LONG_NUM = "5413 0962 7910 9654";
+  public static final String CUSTOMER_CARD_ID = "57a98d98e4b00679b4a830ae";
+  public static final String CUSTOMER_CARD_LONG_NUM = "5413096279109654";
 
   public static void loadTemplates() {
     of(CustomerCard.class)

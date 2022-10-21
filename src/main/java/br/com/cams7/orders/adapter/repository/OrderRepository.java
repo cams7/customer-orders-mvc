@@ -12,6 +12,7 @@ import br.com.cams7.orders.core.port.out.GetOrdersByCountryRepositoryPort;
 import br.com.cams7.orders.core.port.out.UpdateShippingByIdRepositoryPort;
 import br.com.cams7.orders.core.utils.DateUtils;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
@@ -35,45 +36,53 @@ public class OrderRepository
   private final ModelMapper modelMapper;
 
   @Override
-  public List<OrderEntity> getOrders(String country) {
-    var query = new Query(Criteria.where("address.country").is(country));
+  public List<OrderEntity> getOrders(final String country) {
+    final var query = new Query(Criteria.where("address.country").is(country));
     return mongoTemplate.find(query, OrderModel.class, getCollectionName(country)).stream()
-        .map(this::getOrder)
+        .map(this::getOrderWithoutOptional)
         .collect(Collectors.toList());
   }
 
   @Override
-  public OrderEntity getOrder(String country, String orderId) {
+  public Optional<OrderEntity> getOrder(final String country, final String orderId) {
     return getOrder(mongoTemplate.findById(orderId, OrderModel.class, getCollectionName(country)));
   }
 
   @Override
-  public Long delete(String country, String orderId) {
-    var query = new Query(Criteria.where("id").is(orderId));
-    return mongoTemplate
-        .remove(query, OrderModel.class, getCollectionName(country))
-        .getDeletedCount();
+  public Optional<Long> delete(final String country, final String orderId) {
+    final var query = new Query(Criteria.where("id").is(orderId));
+    return Optional.of(
+        mongoTemplate
+            .remove(query, OrderModel.class, getCollectionName(country))
+            .getDeletedCount());
   }
 
   @Override
-  public OrderEntity create(String country, OrderEntity order) {
+  public Optional<OrderEntity> create(final String country, final OrderEntity order) {
     return getOrder(mongoTemplate.insert(getOrder(order), getCollectionName(country)));
   }
 
   @Override
-  public Long updateShipping(String country, String orderId, Boolean registeredShipping) {
-    var query = new Query(Criteria.where("id").is(orderId));
-    var update = new Update();
+  public Optional<Long> updateShipping(
+      final String country, final String orderId, final Boolean registeredShipping) {
+    final var query = new Query(Criteria.where("id").is(orderId));
+    final var update = new Update();
     update.set("registeredShipping", registeredShipping);
-    return mongoTemplate
-        .updateFirst(query, update, OrderModel.class, getCollectionName(country))
-        .getModifiedCount();
+    return Optional.of(
+        mongoTemplate
+            .updateFirst(query, update, OrderModel.class, getCollectionName(country))
+            .getModifiedCount());
   }
 
-  private OrderEntity getOrder(OrderModel model) {
-    if (model == null) return null;
-    var country = model.getAddress().getCountry();
-    var entity =
+  private Optional<OrderEntity> getOrder(final OrderModel model) {
+    if (model == null) return Optional.empty();
+    final var order = getOrderWithoutOptional(model);
+    return Optional.of(order);
+  }
+
+  private OrderEntity getOrderWithoutOptional(final OrderModel model) {
+    final var country = model.getAddress().getCountry();
+    final var entity =
         modelMapper
             .map(model, OrderEntity.class)
             .withOrderId(model.getId())
@@ -83,8 +92,7 @@ public class OrderRepository
   }
 
   private OrderModel getOrder(OrderEntity entity) {
-    if (entity == null) return null;
-    var model = modelMapper.map(entity, OrderModel.class);
+    final var model = modelMapper.map(entity, OrderModel.class);
     model.setId(entity.getOrderId());
     model.setTotal(entity.getTotalAmount());
     model.setRegistrationDate(entity.getRegistrationDate().toLocalDateTime());
