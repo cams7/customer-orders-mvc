@@ -64,7 +64,7 @@ java -jar ${PWD}/_dev/shipping.jar --server.port=8083
 __8__. Open a new terminal tab and start customer-orders app inside a new docker container by running the following commands:
 ```bash
 cd YOUR_PATH/customer-orders-mvc
-docker run -it --rm --net host -v ${PWD}:/work -v ${HOME}/.m2:/root/.m2 -e BUILDER_ADD_CLIENT_CONNECTOR=true -w /work --memory="1g" adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.14.1_1 sh
+docker run -it --rm --net host -v ${PWD}:/work -v ${HOME}/.m2:/root/.m2 -w /work --memory="1g" adoptopenjdk/openjdk11:x86_64-alpine-jdk-11.0.14.1_1 sh
 
 /work/mvnw clean verify -f /work
 java -jar /work/target/customer-orders-mvc-0.0.1-SNAPSHOT.jar --server.port=8080
